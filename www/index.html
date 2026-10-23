@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>نظام توزيع ومتابعة البيانات</title>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="lib/exceljs.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f6;--card:#fff;--tx:#1d2233;--mu:#6b7280;--bd:#e1e4ec;--pr:#2c0aa0;--hd:linear-gradient(90deg,#2a0a96,#3d12c8);--bl:#0b4fd6;--pk:#e91e63;--ok:#12a150;--rd:#d92d20;--ro:#e9ecf3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Tajawal,"Segoe UI",Tahoma,Arial,sans-serif;font-size:15px}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--ro);border:1px solid var(--bd);border-radius:4px;padding:8px 10px;width:100%}
+input[readonly]{opacity:.85}
+button{background:var(--bl);color:#fff;border:0;border-radius:4px;padding:7px 16px;cursor:pointer}
+button.g{background:var(--card);color:var(--tx);border:1px solid var(--bd)}button.d{background:var(--rd)}button.pk{background:var(--pk)}
+.top{background:var(--card);box-shadow:0 1px 6px #0002;display:flex;align-items:center;gap:22px;padding:10px 26px;position:sticky;top:0;z-index:5;overflow-x:auto}
+.logo{font-size:30px;font-weight:700;color:var(--pr);letter-spacing:-1px;margin-inline-end:10px}
+.top a{cursor:pointer;white-space:nowrap;padding:6px 2px;border-bottom:2px solid transparent}.top a.on{border-color:var(--pr);color:var(--pr);font-weight:700}
+.top .sp{flex:1}.usr{white-space:nowrap}
+main{max-width:1200px;margin:22px auto;padding:0 14px}
+.pn{background:var(--card);border-radius:6px;box-shadow:0 1px 5px #0001;margin-bottom:18px;overflow:hidden}
+.hd{background:var(--hd);color:#fff;padding:14px 18px;font-weight:700;font-size:17px}
+.bd{padding:16px}
+.login{max-width:380px;margin:12vh auto;padding:0 14px}.login .logo{display:block;text-align:center;margin-bottom:14px;font-size:44px}
+label{display:block;margin:10px 0 4px;font-size:13px;color:var(--mu)}.mu{color:var(--mu);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.st{background:var(--ro);border-radius:6px;padding:12px}.st b{display:block;font-size:26px;color:var(--pr)}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.tool{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.tool input{width:190px}.tool select{width:auto}.tool .sp{flex:1}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:10px;border-bottom:1px solid var(--bd);text-align:start;white-space:nowrap}
+th{font-weight:700;border-bottom:2px solid var(--bd)}
+tbody tr:hover{background:var(--ro)}
+.pg{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:13px}.pg button{padding:4px 10px;background:var(--card);color:var(--bl);border:1px solid var(--bd)}.pg button.on{background:var(--bl);color:#fff}.pg .sp{flex:1}
+.tag{padding:2px 9px;border-radius:99px;font-size:12px;background:var(--bd)}.tag.ok{background:var(--ok);color:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.ff{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.row>*{flex:1;min-width:140px}
+.chk{display:inline-flex;align-items:center;gap:6px;margin:4px 12px 4px 0;color:var(--tx);font-size:14px}.chk input{width:auto}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px;z-index:9}
+.modal .pn{width:100%;max-width:420px;margin:0}
+.lg{border-bottom:1px solid var(--bd);padding:8px 0;font-size:13px}
+@media(max-width:800px){.two,.ff{grid-template-columns:1fr}.top{padding:8px 12px;gap:14px}}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.cd{border:1px solid var(--bd);border-radius:8px;background:var(--card);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 4px #2a0a9614}
+.ch{background:#f1edfd;color:var(--pr);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.cb{padding:10px 14px;flex:1}.cb div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--bd);font-size:13.5px}.cb div:last-child{border:0}.cb span{color:var(--mu)}.cb b{font-weight:500;text-align:end;word-break:break-word}
+.cd>button{margin:0 14px 14px}
+
+:root{--pr:#4f008c;--hd:linear-gradient(120deg,#4f008c,#7a2ff0 62%,#ff375e);--bg:#f4f0fb;--ro:#f3effa;--bd:#e6e0f3;--bl:#5b21d6}
+body{font-family:"Readex Pro",Tajawal,"Segoe UI",Arial,sans-serif;background:radial-gradient(900px 420px at 95% -5%,#d9c8ff80,transparent),radial-gradient(700px 400px at -5% 30%,#ffc2d160,transparent),var(--bg);background-attachment:fixed}
+.top{margin:10px 12px 0;border-radius:999px;top:8px;padding:8px 20px;background:#ffffffd9;backdrop-filter:blur(12px);box-shadow:0 8px 30px #4f008c22}
+.logo{background:var(--hd);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:32px}
+.top a{padding:7px 16px;border-radius:999px;border:0;transition:.2s}.top a:hover{background:var(--ro)}.top a.on{background:var(--hd);color:#fff;box-shadow:0 4px 14px #7a2ff055}
+.pn{border-radius:20px;box-shadow:0 10px 30px #4f008c14;border:1px solid #fff;animation:up .55s cubic-bezier(.2,.8,.2,1) both}
+.hd{background:none;color:var(--pr);padding:18px 20px 0;font-size:17px;display:flex;align-items:center;gap:10px}
+.hd::before{content:"";width:8px;height:22px;border-radius:6px;background:var(--hd)}
+.modal .hd{background:var(--hd);color:#fff;padding:16px 20px}.modal .hd::before{display:none}.modal .pn{border-radius:20px}
+button{background:var(--hd);border-radius:999px;padding:8px 20px;transition:.2s;box-shadow:0 4px 12px #7a2ff033}button:hover{transform:translateY(-1px)}
+button.g{background:var(--card);box-shadow:none;color:var(--pr)}button.pk{background:linear-gradient(120deg,#ff375e,#ff7a59)}button.d{background:var(--rd)}
+input,select,textarea{border-radius:12px;border:1.5px solid var(--bd);background:#fff}input:focus,select:focus,textarea:focus{outline:0;border-color:#7a2ff0;box-shadow:0 0 0 3px #7a2ff022}
+.hero{position:relative;overflow:hidden;border-radius:26px;background:linear-gradient(125deg,#3b0070,#6a1fe0 58%,#ff375e);color:#fff;padding:28px 30px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;box-shadow:0 18px 40px #6a1fe055;animation:up .6s both}
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;background:#ffffff14}.hero::before{width:260px;height:260px;left:-60px;top:-90px}.hero::after{width:160px;height:160px;left:180px;bottom:-80px}
+.hero small{opacity:.8;font-size:14px}.hero h1{margin:4px 0 8px;font-size:34px;line-height:1.15}.hero p{margin:0;opacity:.92;max-width:380px;line-height:1.7}
+.hero svg{position:relative;flex-shrink:0}.ring{stroke-dasharray:0 100;animation:ring 1.4s .2s cubic-bezier(.2,.8,.2,1) forwards}
+.st-g .st{border:0;color:#fff;position:relative;overflow:hidden}.st-g .st span{color:#ffffffcc}.st-g .st b{color:#fff;font-size:30px}
+.st-g .st:nth-child(1){background:linear-gradient(135deg,#4f008c,#7a2ff0)}.st-g .st:nth-child(2){background:linear-gradient(135deg,#0e9f6e,#35d08b)}.st-g .st:nth-child(3){background:linear-gradient(135deg,#f59e0b,#ffb84d)}.st-g .st:nth-child(4){background:linear-gradient(135deg,#ff375e,#ff7a59)}.st-g .st:nth-child(5){background:linear-gradient(135deg,#2563eb,#60a5fa)}
+.bar{background:var(--ro)}.bar i{border-radius:6px;transform-origin:right;animation:grow 1s cubic-bezier(.2,.8,.2,1) both;background-image:linear-gradient(90deg,#7a2ff0,#ff375e)}
+.cd{border-radius:18px;border:0;box-shadow:0 8px 24px #4f008c14;border-inline-start:6px solid #f59e0b;transition:.25s;animation:up .5s both}.cd:hover{transform:translateY(-4px);box-shadow:0 14px 32px #4f008c26}.cd.cl{border-inline-start-color:var(--ok)}
+.ch{background:none;padding:14px 16px 4px;font-size:15px}.ch b{color:var(--pr);letter-spacing:.5px}
+.tag{background:#fff3d6;color:#b45309;font-weight:600}.tag.ok{background:#d9f7e8;color:#0b7a4b}
+.pg button{border-radius:10px;background:#fff;color:var(--pr);box-shadow:none}.pg button.on{background:var(--hd);color:#fff}
+.login .pn{box-shadow:0 24px 60px #6a1fe033}.login .logo{font-size:56px}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes ring{to{stroke-dasharray:var(--p) 100}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ring{stroke-dasharray:var(--p) 100}}
+@media(max-width:800px){.top{border-radius:22px}.hero h1{font-size:26px}}
+.rp{display:flex;gap:10px;flex-wrap:wrap}.rc{background:#fff;color:var(--tx);border:1.5px solid var(--bd);border-radius:16px;padding:10px 18px;text-align:start;display:flex;flex-direction:column;gap:2px;box-shadow:none}.rc.on{background:var(--hd);color:#fff;border-color:transparent;box-shadow:0 6px 16px #7a2ff044}.rc span{font-size:12px;opacity:.8}
+
+#npc .chk,tbody tr[data-i] .chk{display:flex;margin:7px 0;white-space:normal}
+tbody tr[data-i] td{vertical-align:top}
+/* flat palette: white background, violet + dark pink, no gradients */
+:root{--bg:#fff;--card:#fff;--pr:#47008a;--hd:#47008a;--bl:#47008a;--pk:#ec205a;--rd:#ec205a;--ok:#47008a;--ro:#f6f2fa;--bd:#e7e1f0}
+body{background:#fff}
+.logo{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#47008a}
+.top{background:#fff;backdrop-filter:none;box-shadow:none;border:1.5px solid var(--bd)}
+.top a.on{background:#47008a;color:#fff;box-shadow:none}
+.pn,.cd{box-shadow:none;border:1.5px solid var(--bd)}
+.hd::before{background:#ec205a}
+.modal .hd{background:#47008a}
+button{background:#47008a;box-shadow:none}button:hover{background:#5b1a99;transform:none}
+button.g{background:#fff;color:#47008a;border:1.5px solid var(--bd)}button.g:hover{background:var(--ro)}
+button.pk,button.d{background:#ec205a}button.pk:hover,button.d:hover{background:#d41452}
+input:focus,select:focus,textarea:focus{border-color:#47008a;box-shadow:none}
+.hero{background:#47008a;box-shadow:none}.hero::before{background:#ec205a}.hero::after{background:#5b1a99}
+.st-g .st:nth-child(1){background:#47008a}.st-g .st:nth-child(2){background:#ec205a}.st-g .st:nth-child(3){background:#5b1a99}.st-g .st:nth-child(4){background:#d41452}.st-g .st:nth-child(5){background:#47008a}
+.bar{background:var(--ro)}.bar i{background:#47008a;background-image:none}
+.cd{border-inline-start:6px solid #ec205a}.cd.cl{border-inline-start-color:#47008a}.cd:hover{box-shadow:none;border-color:#47008a}
+.tag{background:#fde4ec;color:#c2154a}.tag.ok{background:#ece3f7;color:#47008a}
+.pg button{background:#fff;color:#47008a;border:1.5px solid var(--bd)}.pg button.on{background:#47008a;color:#fff;border-color:#47008a}
+.rc{background:#fff;color:var(--tx)}.rc.on{background:#47008a;color:#fff;box-shadow:none}
+.login .pn{box-shadow:none}
+.logo{font-size:24px;letter-spacing:0;font-weight:600}.login .logo{font-size:38px}
+.ucs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.uc{border:1.5px solid var(--bd);border-radius:18px;padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer;transition:.2s}.uc:hover{border-color:#47008a;transform:translateY(-2px)}
+.av{width:48px;height:48px;border-radius:50%;background:#ec205a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;flex-shrink:0}
+.av.big{width:80px;height:80px;font-size:34px;margin:0 auto 10px;border:4px solid #ffffff44}
+.up{background:#fff;border-radius:26px;width:100%;max-width:460px;max-height:90vh;overflow:auto;animation:up .35s both}
+.uh{background:#47008a;color:#fff;padding:26px 20px 22px;text-align:center;position:relative}
+.uh .x{position:absolute;top:14px;inset-inline-end:14px;background:#ffffff26;padding:4px 11px;border-radius:999px}.uh .x:hover{background:#ffffff40}
+.ub{padding:6px 20px 22px}
+.seg{display:flex;background:var(--ro);border-radius:999px;padding:4px}.seg button{flex:1;background:transparent;color:var(--tx);border-radius:999px}.seg button:hover{background:transparent}.seg button.on{background:#47008a;color:#fff}.seg button:disabled{opacity:.55;cursor:default}
+.note{background:#fde4ec;color:#c2154a;border-radius:14px;padding:12px 14px;font-size:14px}
+label.pr{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--bd);border-radius:16px;margin:8px 0;color:var(--tx);font-size:14px;cursor:pointer;transition:.2s}
+label.pr:has(input:checked){border-color:#47008a;background:var(--ro)}
+.pr .ic{font-size:22px}.pr .pt{flex:1;display:flex;flex-direction:column;gap:2px}.pr small{color:var(--mu);font-size:12px}
+input.tg{appearance:none;-webkit-appearance:none;width:46px;height:26px;padding:0;border:0;border-radius:99px;background:#d9d2e6;position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
+input.tg::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+input.tg:checked{background:#47008a}input.tg:checked::after{inset-inline-start:23px}
+.av.sm{width:38px;height:38px;font-size:16px}
+button:disabled{opacity:.45;cursor:not-allowed}
+@font-face{font-family:"STC";src:local("STC-Regular"),local("STC Regular"),local("stc");font-weight:400}
+body{font-family:"STC","Readex Pro",Tajawal,"Segoe UI",Arial,sans-serif;font-size:13px;font-weight:400}
+button,input,select,textarea{font-size:13px}
+.hd{font-size:15px}.logo{font-size:21px}.login .logo{font-size:32px}
+.hero h1{font-size:26px}.hero p{font-size:13px}.hero small{font-size:12px}
+.st-g .st b{font-size:22px}.st b{font-size:22px}
+table{font-size:12px}.cb div{font-size:12px}.ch{font-size:13px}.mu{font-size:12px}label{font-size:12px}
+.tag{font-size:11px}.pg{font-size:12px}.pr small{font-size:11px}.pr{font-size:13px}.av{font-size:18px}.av.big{font-size:30px}.av.sm{font-size:14px}
+@media(max-width:800px){.hero h1{font-size:22px}}
+.top{gap:2px;padding:6px 16px;overflow-x:auto;scrollbar-width:none}.top::-webkit-scrollbar{display:none}
+.top a{padding:6px 11px;font-size:12.5px}.top .logo{margin-inline-end:12px}.top .sp{min-width:8px}.usr{font-size:12px;margin-inline-end:6px}
+body{font-weight:500}.hd,th,b,h1,h3,.logo{font-weight:700}button,label,.tag{font-weight:600}.mu{font-weight:500}
+html,body{scrollbar-width:none;-ms-overflow-style:none}html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0}
+/* soften: translucent violet + pink */
+:root{--pr:rgba(71,0,138,.86);--hd:rgba(71,0,138,.86);--bl:rgba(71,0,138,.86);--pk:rgba(236,32,90,.86);--rd:rgba(236,32,90,.86);--ok:rgba(71,0,138,.86)}
+.logo,.hd{color:rgba(71,0,138,.88)}
+.top a.on{background:rgba(71,0,138,.86)}
+.hd::before{background:rgba(236,32,90,.82)}
+.modal .hd{background:rgba(71,0,138,.88)}
+button{background:rgba(71,0,138,.86)}button:hover{background:rgba(71,0,138,.95)}
+button.g{background:#fff;color:rgba(71,0,138,.9)}
+button.pk,button.d{background:rgba(236,32,90,.86)}button.pk:hover,button.d:hover{background:rgba(236,32,90,.96)}
+.hero{background:rgba(71,0,138,.9)}.hero::before{background:rgba(236,32,90,.5)}.hero::after{background:rgba(255,255,255,.12)}
+.st-g .st:nth-child(1){background:rgba(71,0,138,.86)}.st-g .st:nth-child(2){background:rgba(236,32,90,.86)}.st-g .st:nth-child(3){background:rgba(91,26,153,.86)}.st-g .st:nth-child(4){background:rgba(212,20,82,.86)}.st-g .st:nth-child(5){background:rgba(71,0,138,.78)}
+.bar i{background:rgba(71,0,138,.8)}
+.cd{border-inline-start-color:rgba(236,32,90,.75)}.cd.cl{border-inline-start-color:rgba(71,0,138,.75)}.cd:hover{border-color:rgba(71,0,138,.6)}
+.tag{background:rgba(236,32,90,.12);color:rgba(194,21,74,.95)}.tag.ok{background:rgba(71,0,138,.1);color:rgba(71,0,138,.95)}
+.pg button{background:#fff;color:rgba(71,0,138,.9)}.pg button.on{background:rgba(71,0,138,.86);color:#fff}
+.rc.on{background:rgba(71,0,138,.86)}
+.uh{background:rgba(71,0,138,.9)}
+.av{background:rgba(236,32,90,.86)}
+.seg button.on{background:rgba(71,0,138,.86)}
+.note{background:rgba(236,32,90,.1);color:rgba(194,21,74,.95)}
+label.pr:has(input:checked){border-color:rgba(71,0,138,.6)}
+input.tg:checked{background:rgba(71,0,138,.86)}
+input:focus,select:focus,textarea:focus{border-color:rgba(71,0,138,.7)}
+/* compact user/region panel + toast */
+.up{max-width:360px;border-radius:20px;max-height:88vh}
+.uh{padding:16px 16px 14px}
+.uh h3{font-size:15px}.uh span{font-size:11.5px}
+.uh .x{top:9px;inset-inline-end:9px;padding:2px 9px;font-size:12px}
+.av.big{width:52px;height:52px;font-size:20px;margin:0 auto 7px;border:3px solid #ffffff3d}
+.ub{padding:4px 16px 16px}
+.ub label{margin:9px 0 4px}
+.seg{padding:3px}.seg button{padding:5px 10px;font-size:12.5px}
+label.pr{gap:9px;padding:8px 10px;border-radius:12px;margin:6px 0;font-size:12.5px}
+.pr .ic{font-size:17px}.pr small{font-size:10.5px;line-height:1.35}
+input.tg{width:38px;height:21px}
+input.tg::after{width:16px;height:16px;top:2.5px;inset-inline-start:2.5px}
+input.tg:checked::after{inset-inline-start:19.5px}
+.note{padding:9px 11px;font-size:12.5px;border-radius:11px}
+.av.sm{width:30px;height:30px;font-size:12px}
+.ub .st b{font-size:17px}.ub .grid{gap:7px}.ub .st{padding:8px}
+#tst{position:fixed;inset-inline:0;bottom:24px;margin:0 auto;width:max-content;max-width:88vw;background:rgba(71,0,138,.95);color:#fff;padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;box-shadow:0 8px 24px rgba(71,0,138,.3);opacity:0;transform:translateY(14px);pointer-events:none;transition:.28s cubic-bezier(.2,.8,.2,1);z-index:99}
+#tst.show{opacity:1;transform:none}
+#tst.bad{background:rgba(236,32,90,.95);box-shadow:0 8px 24px rgba(236,32,90,.3)}
+.modal{animation:fade .28s ease both}
+.modal.out{animation:fade .34s ease both reverse;pointer-events:none}
+.up{animation:rise .38s cubic-bezier(.2,.85,.25,1) both}
+.modal.out .up{animation:sink .34s cubic-bezier(.4,0,.7,.3) both}
+.modal .pn{animation:rise .38s cubic-bezier(.2,.85,.25,1) both}
+.modal.out .pn{animation:sink .34s cubic-bezier(.4,0,.7,.3) both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes sink{from{opacity:1;transform:none}to{opacity:0;transform:translateY(16px) scale(.97)}}
+@media (prefers-reduced-motion:reduce){.modal,.modal.out,.up,.modal.out .up,.modal .pn,.modal.out .pn{animation:none!important}}
+.orow{display:grid;grid-template-columns:26px 1fr auto 28px 28px 28px;gap:6px;align-items:center;margin:6px 0}
+.orow .num{width:26px;height:26px;border-radius:8px;background:rgba(71,0,138,.08);color:rgba(71,0,138,.9);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600}
+.orow .oi{min-width:0;padding:7px 10px;border-radius:10px}
+.orow .cnt{white-space:nowrap;font-size:11.5px}
+.mini{padding:0;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1;box-shadow:none}
+@media(max-width:620px){.orow{grid-template-columns:24px 1fr 28px 28px 28px}.orow .cnt{display:none}}
+/* dense form rows */
+.ff{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0 10px}
+.ff label{margin:7px 0 2px;font-size:11px;opacity:.85}
+.ff input,.ff select{padding:5px 9px;border-radius:9px;font-size:12px}
+.bd>label{margin:9px 0 3px;font-size:11.5px}
+.bd>input,.bd>select,.bd>textarea{padding:6px 10px;border-radius:9px}
+textarea{line-height:1.45}
+.pn .bd{padding:12px 14px}
+.hd{padding:13px 16px 0;gap:8px}.hd::before{height:18px;width:6px}
+.pn{margin-bottom:12px}
+.two{gap:12px}
+.lg{padding:6px 0}
+.acts{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+#emode{margin-bottom:4px}
+.thr{display:flex;flex-direction:column;gap:10px;max-height:46vh;overflow:auto;padding:2px}
+.msg{display:flex;gap:8px;align-items:flex-start}
+.ava{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;background:rgba(71,0,138,.8)}
+.msg.reg .ava{background:rgba(236,32,90,.85)}.msg.sup .ava{background:rgba(71,0,138,.45)}
+.bub{flex:1;min-width:0;background:rgba(71,0,138,.05);border:1px solid rgba(71,0,138,.1);border-radius:14px;border-start-end-radius:4px;padding:8px 11px}
+.msg.reg .bub{background:rgba(236,32,90,.06);border-color:rgba(236,32,90,.14)}
+.mh{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--mu);margin-bottom:3px}
+.mh b{color:var(--tx);font-size:12px}
+.mtag{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:rgba(71,0,138,.1);color:rgba(71,0,138,.95)}
+.msg.reg .mtag{background:rgba(236,32,90,.12);color:rgba(194,21,74,.95)}
+.bub p{margin:5px 0 0;font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.alert{background:rgba(236,32,90,.07);border:1px solid rgba(236,32,90,.16);border-radius:14px;padding:9px 12px;margin:0 0 10px}
+.alert b{font-size:12.5px;color:rgba(194,21,74,.95)}.alert p{margin:4px 0 0;font-size:12.5px;line-height:1.55;white-space:pre-wrap}
+.alert span{font-size:11px;color:var(--mu)}
+.opt2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.ob{border:1.5px solid var(--bd);border-radius:14px;padding:10px 12px}
+.ob:hover{border-color:rgba(71,0,138,.45)}
+.obh{font-weight:700;font-size:12.5px;margin-bottom:2px}
+.ob label{margin:7px 0 3px}
+button.full{width:100%;margin-top:10px}
+@media(max-width:720px){.opt2{grid-template-columns:1fr}}
+.tw2{overflow:auto;max-height:62vh;border:1px solid var(--bd);border-radius:12px}
+.tw2 table{font-size:12px}
+.tw2 th{position:sticky;top:0;background:#fff;z-index:1;white-space:nowrap}
+.tw2 td{white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.tw2 td button{padding:4px 12px;font-size:11.5px}
+.tw2 tbody tr:hover{background:var(--ro)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const NATIVE=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+function b64(u8){let s='';for(let i=0;i<u8.length;i+=32768)s+=String.fromCharCode.apply(null,u8.subarray(i,i+32768));return btoa(s)}
+async function nativeSave(filename,u8){
+  const FS=Capacitor.Plugins.Filesystem,SH=Capacitor.Plugins.Share;
+  const name=filename.replace(/[\\/:*?"<>|]/g,'_');
+  const r=await FS.writeFile({path:name,data:b64(u8),directory:'CACHE'});
+  await SH.share({title:name,url:r.uri,dialogTitle:'حفظ أو مشاركة الملف'});
+}
+</script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PERMS={upload:'رفع وتوزيع الملفات',users:'إنشاء المستخدمين والصلاحيات',report:'سحب التقرير',options:'إدارة الخيارات',review:'مراجعة الحالات المغلقة والرد وتحويلها للمناطق'};
+const KEY='wf_app_v1';
+let db;
+try{db=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(db&&!db.fields)db.fields=[];
+if(!db)db={fields:[],users:[{u:'admin',p:'admin123',name:'المدير',role:'manager',perms:Object.keys(PERMS)}],headers:[],rows:[],opts:['تم الإنجاز','قيد المتابعة','لم يرد','مرفوض','يحتاج مراجعة']};
+let SRV='',sv=0,pfail=0,applying=false,pushT=null,online=false;
+try{SRV=localStorage.getItem('wf_srv')||(!NATIVE&&location.protocol.startsWith('http')?location.origin+'/api':'')}catch(e){}
+function applyDB(o){Object.keys(db).forEach(k=>{delete db[k]});Object.assign(db,o);
+  db.users=db.users||[];db.reports=db.reports||[];db.regions=db.regions||[];db.companies=db.companies||[];db.viols=db.viols||[];}
+function localSave(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+function dbStamp(){const e=document.getElementById('syn');if(e)e.textContent=online?('متصل بقاعدة البيانات · نسخة '+sv):'حفظ محلي على هذا الجهاز فقط'}
+async function pull(force){
+  if(!SRV)return false;
+  try{const r=await fetch(SRV+'/db',{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json();
+    online=true;pfail=0;
+    if(force||j.v!==sv){sv=j.v;if(j.data&&j.data.users){applying=true;applyDB(j.data);localSave();applying=false;if(me)render()}}
+    dbStamp();return true}
+  catch(e){online=false;pfail++;
+    if(pfail>=2){let set='';try{set=localStorage.getItem('wf_srv')||''}catch(x){}if(!set)SRV=''}
+    dbStamp();return false}
+}
+async function push(){
+  if(!SRV||applying)return;
+  try{const r=await fetch(SRV+'/db',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({v:sv,data:db})});
+    if(!r.ok)throw 0;const j=await r.json();sv=j.v;online=true;dbStamp()}
+  catch(e){online=false;dbStamp()}
+}
+const save=()=>{localSave();if(SRV&&!applying){clearTimeout(pushT);pushT=setTimeout(push,700)}};
+let repId=null;if(!db.regions)db.regions=[];if(!db.companies)db.companies=[];if(!db.viols)db.viols=[];
+if(!db.reports)db.reports=(db.rows&&db.rows.length)?[{id:'r1',name:'التقرير الأول',headers:db.headers,rows:db.rows,emps:[...new Set(db.rows.map(r=>r.a))],date:''}]:[];
+const DEF=['تم الإنجاز','قيد المتابعة','لم يرد','مرفوض','يحتاج مراجعة'];
+db.reports.forEach(r=>{if(!r.opts)r.opts=[...(db.opts||DEF)];if(!r.fields)r.fields=JSON.parse(JSON.stringify(db.fields||[]))});
+delete db.headers;delete db.rows;delete db.opts;delete db.fields;
+const curRep=()=>db.reports.find(x=>x.id===repId)||null;
+Object.defineProperty(db,'rows',{enumerable:false,configurable:true,get(){const r=curRep();return r?r.rows:[]},set(v){const r=curRep();if(r)r.rows=v}});
+Object.defineProperty(db,'opts',{enumerable:false,configurable:true,get(){const r=curRep();return r?r.opts:[]}});
+Object.defineProperty(db,'fields',{enumerable:false,configurable:true,get(){const r=curRep();return r?r.fields:[]},set(v){const r=curRep();if(r)r.fields=v}});
+Object.defineProperty(db,'headers',{enumerable:false,configurable:true,get(){const r=curRep();return r?r.headers:[]}});
+const allRows=()=>db.reports.flatMap(r=>r.rows);
+const vis=()=>db.reports.filter(r=>isM()||r.emps.includes(me.u));
+const mineAll=()=>isM()?allRows():allRows().filter(r=>r.a===me.u);
+const repEmps=()=>emps().filter(e=>(curRep()||{emps:[]}).emps.includes(e.u));
+function repPills(){
+  const v=vis();if(!v.length)return '';
+  return `<div class="pn"><div class="bd"><div class="rp">`+v.map(r=>`<button class="rc ${r.id===repId?'on':''}" data-r="${r.id}"><b>${esc(r.name)}</b><span>${isM()?`${r.rows.length} حالة · ${r.emps.length} موظف`:`${r.rows.filter(x=>x.a===me.u).length} حالة لك`}</span></button>`).join('')+`</div></div></div>`;
+}
+function wirePills(){document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{repId=b.dataset.r;T.a.p=T.b.p=T.c.p=1;filt='';render()})}
+let me=null,sec='dash',unlocked=false,filt='',msg='';
+const isM=()=>me.role==='manager';
+const can=p=>isM()||me.perms.includes(p);
+const emps=()=>db.users.filter(u=>u.role==='employee');
+
+function ask(title,body,okTxt,cb){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="pn"><div class="hd">${title}</div><div class="bd">${body}<div class="row" style="margin-top:14px"><button id="mo">${okTxt}</button><button class="g" id="mx">إلغاء</button></div></div></div>`;
+  document.body.appendChild(m);
+  m.querySelector('#mx').onclick=()=>shut(m);
+  m.querySelector('#mo').onclick=()=>{if(cb(m)!==false)shut(m)};
+  return m;
+}
+function login(){
+  $('#root').innerHTML=`<div class="login"><div class="pn"><div class="hd">تسجيل الدخول</div><div class="bd"><span class="logo">Pioneers</span><div class="mu">دخول موحد للموظف والمدير</div>
+  <label>اسم المستخدم</label><input id="lu" autocomplete="username"><label>كلمة المرور</label><input id="lp" type="password" autocomplete="current-password">
+  <p id="le" style="color:var(--rd);min-height:20px;margin:8px 0"></p><button style="width:100%" id="lb">دخول</button>
+  <p class="mu" style="margin-bottom:0">أول استخدام: admin / admin123</p></div></div></div>`;
+  const go=()=>{const u=db.users.find(x=>x.u===$('#lu').value.trim()&&x.p===$('#lp').value);
+    if(!u){$('#le').textContent='بيانات الدخول غير صحيحة';return}
+    me=u;sec='dash';unlocked=false;filt='';render()};
+  $('#lb').onclick=go;$('#lp').onkeydown=e=>{if(e.key==='Enter')go()};
+}
+function nav(s){
+  if(false){
+    ask('تأكيد سريع','<label>أدخل كلمة المرور للدخول إلى هذا القسم</label><input id="qp" type="password">','تأكيد',m=>{
+      if(m.querySelector('#qp').value!==me.p){alert('كلمة المرور غير صحيحة');return false}
+      unlocked=true;sec=s;msg='';render()}).querySelector('#qp').focus();
+    return;
+  }
+  sec=s;msg='';render();
+}
+function shut(m,cb){
+  if(!m||m.dataset.out)return;m.dataset.out='1';m.classList.add('out');
+  setTimeout(()=>{m.remove();if(cb)cb()},320);
+}
+function toast(t,bad){
+  let e=document.getElementById('tst');
+  if(!e){e=document.createElement('div');e.id='tst';document.body.appendChild(e)}
+  e.textContent=(bad?'⚠ ':'✓ ')+(t||'تم الحفظ');e.className='';void e.offsetWidth;
+  e.className='show'+(bad?' bad':'');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>{e.className=''},2200);
+}
+function P(t,b){return `<div class="pn"><div class="hd">${t}</div><div class="bd">${b}</div></div>`}
+function render(){
+  if(!me)return login();
+  if(sec!=='redit'&&sec!=='fedit'&&sec!=='vedit'&&sec!=='viols'&&!vis().some(r=>r.id===repId))repId=vis()[0]?vis()[0].id:null;
+  const seeCases=isM()||can('review')||allRows().some(r=>r.a===me.u);
+  const tabs=[['dash','الرئيسية']];
+  if(seeCases)tabs.push(['data',isM()?'الحالات':'حالاتي']);
+  if(!seeCases&&(sec==='data'||sec==='edit'))sec=myViols().length?'viols':'dash';
+  if(can('upload'))tabs.push(['upload','رفع وتوزيع ملف']);
+  if(can('options'))tabs.push(['options','الخيارات']);if(can('users'))tabs.push(['users','المستخدمون والصلاحيات'],['regions','المناطق'],['companies','الشركات']);
+  if(myViols().length||isM())tabs.splice(2,0,['viols','المخالفات ('+myViols().filter(v=>vTurn(v)).length+')']);
+  if(isM()||can('review')||db.regions.some(g=>g.emps.includes(me.u)))tabs.splice(2,0,['rcases','حالات المناطق']);
+  if(isM()||db.reports.some(x=>x.by===me.u))tabs.splice(2,0,['final','اعتماد الإغلاق']);
+  if(can('report'))tabs.push(['prod','الإنتاجية'],['report','التقرير']);
+  if(isM()||can('users'))tabs.push(['dbsec','قاعدة البيانات']);
+  $('#root').innerHTML=`<div class="top"><span class="logo">Pioneers</span>${tabs.map(t=>`<a class="${sec===t[0]||(sec==='edit'&&t[0]==='data')||(sec==='redit'&&t[0]==='rcases')||(sec==='fedit'&&t[0]==='final')||(sec==='vedit'&&t[0].indexOf('viols')===0)?'on':''}" data-s="${t[0]}">${t[1]}</a>`).join('')}<span class="sp"></span><span class="usr">${esc(me.name)} · ${isM()?'مدير':'موظف'}</span><button class="g" id="out">خروج</button></div><main id="mn"></main>`;
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>nav(b.dataset.s));
+  $('#out').onclick=()=>{me=null;render()};
+  ({dash,data:dataV,edit,review:null,upload,options,users,report,regions,companies,rcases,redit,final,fedit,viols,vedit,prod,dbsec})[sec]();
+}
+const mine=()=>isM()?db.rows:db.rows.filter(r=>r.a===me.u);
+const done=r=>!!r.s;
+const nm=u=>(db.users.find(x=>x.u===u)||{name:'—'}).name;
+function donut(d,t){
+  const p=t?Math.round(d/t*100):0;
+  return `<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap"><svg viewBox="0 0 36 36" width="150" height="150"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--bd)" stroke-width="4"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="var(--ok)" stroke-width="4" stroke-dasharray="${p} ${100-p}" transform="rotate(-90 18 18)"/><text x="18" y="20.5" text-anchor="middle" font-size="7" font-weight="700" fill="var(--tx)">${p}%</text></svg><div><div><span class="tag ok">&nbsp;</span> مغلقة: <b>${d}</b></div><div style="margin-top:6px"><span class="tag">&nbsp;</span> معلقة: <b>${t-d}</b></div></div></div>`;
+}
+function days7(rs){
+  const ds=[...Array(7)].map((_,k)=>new Date(Date.now()-(6-k)*864e5).toISOString().slice(0,10));
+  const v=ds.map(d=>rs.filter(r=>r.d===d).length),mx=Math.max(1,...v);
+  return `<svg viewBox="0 0 350 150" width="100%">`+v.map((n,i)=>{const h=n/mx*95,x=14+i*48;return `<rect x="${x}" y="${118-h}" width="30" height="${h}" rx="4" fill="var(--pr)"/><text x="${x+15}" y="${112-h}" text-anchor="middle" font-size="11" fill="var(--tx)">${n}</text><text x="${x+15}" y="136" text-anchor="middle" font-size="10" fill="var(--mu)">${ds[i].slice(5)}</text>`}).join('')+`</svg>`;
+}
+function hbars(items){
+  const mx=Math.max(1,...items.map(i=>i[1]));
+  return items.map(i=>`<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>${esc(i[0])}</span><b>${i[1]}</b></div><div class="bar"><i style="width:${i[1]/mx*100}%;background:var(--pr)"></i></div></div>`).join('')||'<p class="mu">لا توجد بيانات</p>';
+}
+function hero(rs,d,p,today){
+  const hr=new Date().getHours(),g=hr<12?'صباح الخير':'مساء الخير',td=rs.filter(r=>r.d===today).length;
+  return `<div class="hero"><div><small>${g}</small><h1>${esc(me.name)}</h1><p>${rs.length-d?`لديك ${rs.length-d} حالة معلقة بانتظار المتابعة`:'لا توجد حالات معلقة، عمل رائع'}${td?` · أغلقت اليوم ${td}`:''}</p></div><svg viewBox="0 0 36 36" width="150" height="150"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="#ffffff30" stroke-width="3.2"/><circle class="ring" style="--p:${p}" cx="18" cy="18" r="15.9155" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" transform="rotate(-90 18 18)"/><text x="18" y="20.5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">${p}%</text></svg></div>`;
+}
+function cu(){document.querySelectorAll('[data-cu]').forEach(e=>{const t=parseInt(e.dataset.cu),sf=String(e.dataset.cu).includes('%')?'%':'',t0=performance.now();const f=n=>{const k=Math.min(1,(n-t0)/800);e.textContent=Math.round(t*(1-Math.pow(1-k,3)))+sf;if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)})}
+function dash(){
+  if(!(isM()||can('review')||allRows().some(r=>r.a===me.u)))return vdash();
+  const rs=mineAll(),d=rs.filter(done).length,p=rs.length?Math.round(d/rs.length*100):0,today=new Date().toISOString().slice(0,10);
+  let h=hero(rs,d,p,today)+`<div class="grid st-g" style="margin-bottom:18px">`+[['إجمالي الحالات',rs.length],['الحالات المغلقة',d],['الحالات المعلقة',rs.length-d],['أُغلقت اليوم',rs.filter(r=>r.d===today).length],['نسبة الإنجاز',p+'%']].map(x=>`<div class="st pn" style="padding:14px"><span class="mu">${x[0]}</span><b data-cu="${x[1]}">${x[1]}</b></div>`).join('')+`</div>`;
+  const rc={};rs.filter(done).forEach(r=>rc[r.s]=(rc[r.s]||0)+1);
+  const reasons=Object.entries(rc).sort((a,b)=>b[1]-a[1]);
+  if(isM()){
+    const st=emps().map(e=>{const r=allRows().filter(x=>x.a===e.u),k=r.filter(done).length;return {n:e.name,t:r.length,k,q:r.length?Math.round(k/r.length*100):0,td:r.filter(x=>x.d===today).length}});
+    const mx=Math.max(1,...st.map(x=>x.t));
+    h+=P('إنتاجية الموظفين (مغلقة / معلقة)',st.map(x=>`<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>${esc(x.n)}</span><span class="mu">أُغلق ${x.k} من ${x.t} (${x.q}%) · اليوم ${x.td}</span></div><div class="bar" style="height:14px;width:${x.t/mx*100}%;min-width:40px;display:flex"><i style="width:${x.q}%;background:var(--ok)"></i></div></div>`).join('')||'<p class="mu">لا يوجد موظفون بعد</p>');
+    h+=`<div class="two">${P('نسبة الإنجاز الكلية',donut(d,rs.length))}${P('أعلى الموظفين إغلاقاً',hbars(st.slice().sort((a,b)=>b.k-a.k).map(x=>[x.n,x.k])))}</div>`;
+  }else h+=P('تقدمي',donut(d,rs.length));
+  h+=`<div class="two">${P('الإغلاق خلال آخر 7 أيام',days7(rs))}${P('توزيع الأسباب',hbars(reasons))}</div>`;
+  $('#mn').innerHTML=h;cu();
+}
+let vmode='cards';try{vmode=localStorage.getItem('wf_view')||'cards'}catch(e){}
+const T={a:{q:'',n:10,p:1},b:{q:'',n:10,p:1},c:{q:'',n:10,p:1}};
+const hdrs=()=>[...db.headers,...(isM()?['الموظف']:[]),...db.fields.map(f=>f.name),'الحالة','ملاحظات'];
+const cells=r=>[...db.headers.map((_,j)=>r.c[j]??''),...(isM()?[nm(r.a)]:[]),...db.fields.map(f=>(r.x||{})[f.id]||''),r.s,r.n];
+const view=id=>{const rs=isM()&&filt?db.rows.filter(r=>r.a===filt):mine();return rs.filter(r=>!r.vio).filter(r=>id==='a'?(!r.s&&!(r.reg&&!r.rd)):id==='c'?(!r.s&&r.reg&&!r.rd):!!r.s)};
+const flt=id=>{const q=T[id].q.toLowerCase();return view(id).filter(r=>!q||cells(r).join(' ').toLowerCase().includes(q))};
+function shell(id,title){
+  return `<div class="pn"><div class="hd">${title}</div><div class="bd"><div class="tool"><input data-q="${id}" placeholder="بحث" value="${esc(T[id].q)}"><span class="sp"></span><label style="margin:0">عدد الصفوف</label><select data-n="${id}">${[10,25,50,100].map(x=>`<option ${T[id].n===x?'selected':''}>${x}</option>`).join('')}</select><button class="g" data-c="${id}">Copy</button><button class="g" data-x="${id}">Export Excel</button><span class="sp"></span><button class="${vmode==='cards'?'':'g'}" data-vm="cards">▦ كروت</button><button class="${vmode==='table'?'':'g'}" data-vm="table">▤ جدول</button></div><div class="tw" id="tb${id}"></div><div class="pg" id="pg${id}"></div></div></div>`;
+}
+function upd(id){
+  const t=T[id],rs=flt(id),pages=Math.max(1,Math.ceil(rs.length/t.n));t.p=Math.min(t.p,pages);
+  const st=(t.p-1)*t.n,sl=rs.slice(st,st+t.n);
+  const H=hdrs();
+  const act=r=>r.fin?'<span class="mu">🔒 أُغلقت نهائياً</span>':(r.reg&&!r.rd&&!isM()&&!can('review'))?'<span class="mu">⏳ عند المنطقة</span>':r.s&&!can('review')?'<span class="mu">🔒 للمراجعين</span>':`<button data-e="${r.i}">${r.reg&&r.rd?'متابعة':'اختيار'}</button>`;
+  if(vmode==='table'){
+    $('#tb'+id).innerHTML=`<div class="tw2"><table><thead><tr><th>#</th>${H.map(h=>`<th>${esc(h)}</th>`).join('')}<th>المرحلة</th><th>إجراء</th></tr></thead><tbody>`+(sl.map(r=>{const c=cells(r);return `<tr><td>CVE${String(r.i+1).padStart(4,'0')}</td>${c.map(v=>`<td>${esc(v)}</td>`).join('')}<td><span class="tag ${r.s?'ok':''}">${r.s?stg(r):'معلقة'}</span></td><td>${act(r)}</td></tr>`}).join('')||`<tr><td colspan="${H.length+3}" class="mu">لا توجد حالات</td></tr>`)+`</tbody></table></div>`;
+  } else
+  $('#tb'+id).innerHTML=`<div class="cards">`+(sl.map(r=>{const c=cells(r);return `<div class="cd ${r.s?'cl':''}"><div class="ch"><b>CVE${String(r.i+1).padStart(4,'0')}</b>${r.s?`<span class="tag ok">${esc(r.s)}</span>`:'<span class="tag">معلقة</span>'}</div><div class="cb">${H.map((h,j)=>j>=c.length-2?'':`<div><span>${esc(h)}</span><b>${esc(c[j])}</b></div>`).join('')}${r.n?`<div><span>الإفادة</span><b>${esc(r.n)}</b></div>`:''}${r.s?`<div><span>المرحلة</span><b>${stg(r)}</b></div>`:''}${r.rp?`<div><span>رد المراجع</span><b>${esc(r.rp)}</b></div>`:''}${r.reg?`<div><span>المنطقة</span><b>${esc(rgn(r.reg))} · ${r.rd?'أُرسلت للموظف':'بانتظار الإفادة'}</b></div>`:''}</div>${r.fin?'<span class="mu" style="padding:0 14px 14px">🔒 أُغلقت نهائياً</span>':(r.reg&&!r.rd&&!isM()&&!can('review'))?'<span class="mu" style="padding:0 14px 14px">⏳ عند المنطقة</span>':r.s&&!can('review')?'<span class="mu" style="padding:0 14px 14px">🔒 مغلقة للمراجعين فقط</span>':`<button data-e="${r.i}">${r.reg&&r.rd?'متابعة':'اختيار'}</button>`}</div>`}).join('')||'<p class="mu">لا توجد حالات</p>')+`</div>`;
+  let p='';const add=(l,n,on)=>p+=`<button data-p="${n}" class="${on?'on':''}">${l}</button>`;
+  add('«',1);add('‹',Math.max(1,t.p-1));for(let k=Math.max(1,t.p-3);k<=Math.min(pages,t.p+3);k++)add(k,k,k===t.p);add('›',Math.min(pages,t.p+1));add('»',pages);
+  $('#pg'+id).innerHTML=p+`<span class="sp"></span><span>عرض ${rs.length?st+1:0} إلى ${st+sl.length} من ${rs.length}</span>`;
+  $('#pg'+id).querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{t.p=+b.dataset.p;upd(id)});
+  $('#tb'+id).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{cur=+b.dataset.e;sec='edit';render()});
+}
+let cur=0;
+function reassign(){
+  const rp=curRep();if(!rp)return;
+  const cnt=u=>rp.rows.filter(r=>r.a===u&&!r.vio).length,open=u=>rp.rows.filter(r=>r.a===u&&!r.vio&&!r.s).length;
+  const had=[...new Set(rp.rows.map(r=>r.a))].map(u=>db.users.find(x=>x.u===u)).filter(Boolean);
+  const m=document.createElement('div');m.className='modal';document.body.appendChild(m);
+  m.onclick=e=>{if(e.target===m)shut(m)};
+  m.innerHTML=`<div class="up"><div class="uh"><button class="x" id="cl">✕</button><div class="av big">⇄</div><h3 style="margin:0">إعادة توزيع الحالات</h3><span style="opacity:.8">${esc(rp.name)}</span></div><div class="ub">
+  <label>من الموظف (غير المتواجد)</label><select id="rf">${had.map(e=>`<option value="${e.u}">${esc(e.name)} — ${open(e.u)} معلقة من ${cnt(e.u)}</option>`).join('')||'<option value="">لا يوجد</option>'}</select>
+  <label>ما الذي يُنقل</label><div class="seg" id="rsc"><button data-sc="open" class="on">المعلقة فقط</button><button data-sc="all">كل حالاته</button></div>
+  <label>طريقة التوزيع</label><div class="seg" id="rmd"><button data-md="eq" class="on">بالتساوي على المحددين</button><button data-md="one">موظف واحد</button></div>
+  <label>إلى الموظفين المتواجدين</label><div id="rto">${emps().map(e=>`<label class="pr"><span class="av sm">${esc([...e.name.trim()][0]||'?')}</span><span class="pt"><b>${esc(e.name)}</b><small>@${esc(e.u)} · ${open(e.u)} معلقة</small></span><input type="checkbox" class="tg" value="${e.u}"></label>`).join('')||'<p class="mu">لا يوجد موظفون</p>'}</div>
+  <div class="acts"><button class="g" id="rx">إلغاء</button><button class="pk" id="rok">تنفيذ النقل</button></div></div></div>`;
+  let sc='open',md='eq';
+  m.querySelector('#cl').onclick=m.querySelector('#rx').onclick=()=>shut(m);
+  m.querySelectorAll('#rsc [data-sc]').forEach(b=>b.onclick=()=>{sc=b.dataset.sc;m.querySelectorAll('#rsc [data-sc]').forEach(x=>x.classList.toggle('on',x.dataset.sc===sc))});
+  m.querySelectorAll('#rmd [data-md]').forEach(b=>b.onclick=()=>{md=b.dataset.md;m.querySelectorAll('#rmd [data-md]').forEach(x=>x.classList.toggle('on',x.dataset.md===md))});
+  m.querySelector('#rok').onclick=()=>{
+    const from=m.querySelector('#rf').value;if(!from)return toast('اختر الموظف',1);
+    let to=[...m.querySelectorAll('#rto .tg:checked')].map(x=>x.value).filter(u=>u!==from);
+    if(!to.length)return toast('حدد موظفاً واحداً على الأقل',1);
+    if(md==='one')to=[to[0]];
+    const rows=rp.rows.filter(r=>r.a===from&&!r.vio&&(sc==='all'||!r.s));
+    if(!rows.length)return toast('لا توجد حالات للنقل',1);
+    rows.forEach((r,k)=>{const u=to[k%to.length];r.a=u;(r.log=r.log||[]).push({s:'نقل الحالة من '+nm(from)+' إلى '+nm(u),n:'',by:me.u,t:now()})});
+    to.forEach(u=>{if(!rp.emps.includes(u))rp.emps.push(u)});
+    save();shut(m,()=>{render();toast(`تم نقل ${rows.length} حالة إلى ${to.length} موظف`)});
+  };
+}
+function dataV(){
+  if(!db.headers.length){$('#mn').innerHTML=P('الحالات','<p class="mu">لم يتم رفع ملف بعد.</p>');return}
+  let h=repPills();
+  if(isM())h+=`<div class="pn"><div class="bd"><div class="tool"><select id="fl" style="width:auto"><option value="">كل الموظفين</option>${repEmps().map(e=>`<option value="${e.u}" ${filt===e.u?'selected':''}>${esc(e.name)}</option>`).join('')}</select><button class="g" id="rea">⇄ إعادة توزيع حالات موظف</button><span class="sp"></span><button class="d" id="dr">حذف هذا التقرير</button></div></div></div>`;
+  const showC=isM()||can('review');
+  $('#mn').innerHTML=h+shell('a','الحالات المعلقة')+(showC?shell('c','عند المناطق'):'')+shell('b','الحالات المغلقة');
+  if(isM()){$('#fl').onchange=e=>{filt=e.target.value;T.a.p=T.b.p=T.c.p=1;dataV()};$('#rea').onclick=()=>reassign();
+    $('#dr').onclick=()=>{if(confirm('حذف التقرير وكل بياناته ومخالفاته؟')){db.viols=db.viols.filter(v=>v.rep!==repId);db.reports=db.reports.filter(r=>r.id!==repId);save();render();toast('تم حذف التقرير')}}}
+  wirePills();
+  (showC?['a','c','b']:['a','b']).forEach(id=>{
+    $(`[data-q=${id}]`).oninput=e=>{T[id].q=e.target.value;T[id].p=1;upd(id)};
+    $(`[data-n=${id}]`).onchange=e=>{T[id].n=+e.target.value;T[id].p=1;upd(id)};
+    $(`[data-c=${id}]`).onclick=async()=>{try{await navigator.clipboard.writeText(flt(id).map(r=>cells(r).join('\t')).join('\n'))}catch(e){}};
+    $('#tb'+id).parentNode.querySelectorAll('[data-vm]').forEach(b=>b.onclick=()=>{vmode=b.dataset.vm;try{localStorage.setItem('wf_view',vmode)}catch(e){}dataV()});
+    $(`[data-x=${id}]`).onclick=()=>exp([hdrs(),...flt(id).map(cells)],id==='a'?'pending':id==='c'?'at-regions':'closed');
+    upd(id);
+  });
+}
+const PRP='FF47008A',PNK='FFEC205A',ROW='FFF7F3FB',BDR='FFE6E0F3';
+async function book(sheets){
+  if(typeof ExcelJS==='undefined'){
+    const wb=XLSX.utils.book_new();
+    sheets.forEach(sh=>{const ws=XLSX.utils.aoa_to_sheet(sh.aoa);ws['!cols']=(sh.aoa[0]||[]).map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,sh.name.slice(0,30))});
+    return new Uint8Array(XLSX.write(wb,{type:'array',bookType:'xlsx'}));
+  }
+  const wb=new ExcelJS.Workbook();wb.creator='Pioneers';wb.created=new Date();
+  const thin={style:'thin',color:{argb:BDR}};
+  sheets.forEach(sh=>{
+    const ws=wb.addWorksheet(sh.name.slice(0,30),{views:[{rightToLeft:true,state:'frozen',ySplit:sh.title?2:1}],properties:{defaultRowHeight:18}});
+    const cols=(sh.aoa[0]||[]).length;
+    if(sh.title){const t=ws.addRow([sh.title]);ws.mergeCells(1,1,1,Math.max(cols,1));
+      t.height=28;const c=t.getCell(1);c.font={bold:true,size:14,color:{argb:'FFFFFFFF'}};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:PNK}};c.alignment={horizontal:'center',vertical:'middle'}}
+    sh.aoa.forEach(r=>ws.addRow(r));
+    const hIdx=sh.title?2:1,hr=ws.getRow(hIdx);hr.height=24;
+    hr.eachCell({includeEmpty:true},c=>{c.font={bold:true,color:{argb:'FFFFFFFF'},size:11};
+      c.fill={type:'pattern',pattern:'solid',fgColor:{argb:PRP}};
+      c.alignment={horizontal:'center',vertical:'middle',wrapText:true};
+      c.border={top:thin,left:thin,right:thin,bottom:thin}});
+    const last=ws.rowCount;
+    for(let i=hIdx+1;i<=last;i++){const r=ws.getRow(i),tot=sh.total&&i===last;
+      r.eachCell({includeEmpty:true},c=>{
+        c.alignment={horizontal:'right',vertical:'middle',wrapText:false};
+        c.border={top:thin,left:thin,right:thin,bottom:thin};
+        if(tot)c.font={bold:true,color:{argb:PRP}};
+        const f=tot?'FFEDE4F7':((i-hIdx)%2===0?ROW:null);
+        if(f)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:f}}})}
+    for(let j=1;j<=cols;j++){let w=10;sh.aoa.forEach(r=>{const v=r[j-1]==null?'':String(r[j-1]);w=Math.max(w,Math.min(46,v.length+4))});ws.getColumn(j).width=w}
+    if(cols)ws.autoFilter={from:{row:hIdx,column:1},to:{row:hIdx,column:cols}};
+  });
+  return new Uint8Array(await wb.xlsx.writeBuffer());
+}
+async function dl(filename,data){
+  if(NATIVE){try{await nativeSave(filename,data);toast('تم تجهيز الملف');return true}catch(e){if(String(e).match(/cancel/i))return false;toast('تعذر حفظ الملف',1);return false}}
+  try{const d=(typeof claude!=='undefined'&&claude&&claude.use)?await claude.use('downloads'):null;
+    if(d){await d.save({filename,data});toast('تم حفظ الملف');return true}}catch(e){if(e&&e.code==='declined')return false}
+  try{const b=new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},2000);toast('تم تحميل الملف');return true
+  }catch(e){toast('تعذر تحميل الملف',1);return false}
+}
+async function xl(sheets,filename){try{await dl(filename,await book(sheets))}catch(e){toast('تعذر إنشاء الملف',1)}}
+async function exp(aoa,name){
+  await xl([{name:'البيانات',title:(curRep()?curRep().name:'التقرير'),aoa}],name+'.xlsx');
+}
+const rgn=id=>(db.regions.find(g=>g.id===id)||{name:''}).name;
+const now=()=>new Date().toLocaleString('ar');
+const infoP=r=>P('معلومات الأمر',`<div class="ff"><div><label>الرقم التسلسلي</label><input readonly value="${r.i+1}"></div><div><label>الموظف</label><input readonly value="${esc(nm(r.a))}"></div>${db.headers.map((x,j)=>`<div><label>${esc(x)}</label><input readonly value="${esc(r.c[j])}"></div>`).join('')}</div>`);
+const kind=l=>/منطقة/.test(l.s||'')?'reg':/إغلاق نهائي/.test(l.s||'')?'sup':'emp';
+const thread=r=>P('المحادثة والردود',(r.log||[]).length?`<div class="thr">`+(r.log||[]).map(l=>`<div class="msg ${kind(l)}"><span class="ava">${esc([...(nm(l.by)||'?').trim()][0]||'?')}</span><div class="bub"><div class="mh"><b>${esc(nm(l.by))}</b><span>${esc(l.t)}</span></div>${l.s?`<span class="mtag">${esc(l.s)}</span>`:''}${l.n?`<p>${esc(l.n)}</p>`:''}</div></div>`).join('')+`</div>`:'<span class="mu">لا توجد ردود بعد</span>');
+const logP=r=>P('سجل النشاط',(r.log||[]).slice().reverse().map(l=>`<div class="lg"><b>${esc(l.s||'—')}</b> · ${esc(nm(l.by))} · <span class="mu">${esc(l.t)}</span><br>${esc(l.n)}</div>`).join('')||'<span class="mu">لا يوجد نشاط</span>');
+function edit(){
+  const r=db.rows[cur];if(!r||r.fin||(r.s&&!can('review'))){sec='data';return dataV()}
+  if(r.s)return review(r);
+  if(r.reg&&!r.rd&&!isM()&&!can('review')){sec='data';return dataV()}
+  const back=!!(r.reg&&r.rd);
+  const comp=`${back?`<div class="alert"><b>عادت من ${esc(rgn(r.reg))}</b><p>${esc(r.rr)}</p><span>${esc(r.rt||'')}</span></div>`:''}
+  <label>اكتب الإفادة أو الملاحظة</label><textarea id="en" rows="4" placeholder="اكتب هنا ثم اختر الإجراء المناسب">${esc(r.n)}</textarea>
+  <div class="opt2">
+    <div class="ob"><div class="obh">🏁 إغلاق الحالة</div>${curRep().sOff?'':`<label>السبب</label><select id="es"><option value="">-- اختر السبب --</option>${db.opts.map(o=>`<option ${o===r.s?'selected':''}>${esc(o)}</option>`).join('')}</select>`}${db.fields.map(f=>`<label>${esc(f.name)}</label>${f.t==='text'?`<textarea id="ex_${f.id}" rows="2">${esc((r.x||{})[f.id]||'')}</textarea>`:`<select id="ex_${f.id}"><option value="">-- اختر --</option>${f.opts.map(o=>`<option ${o===(r.x||{})[f.id]?'selected':''}>${esc(o)}</option>`).join('')}</select>`}`).join('')}<button class="pk full" id="esv">إغلاق الحالة</button></div>
+    <div class="ob"><div class="obh">📍 إرسال إلى منطقة</div><label>المنطقة</label><select id="eg"><option value="">-- اختر المنطقة --</option>${db.regions.map(g=>`<option value="${g.id}" ${g.id===r.reg?'selected':''}>${esc(g.name)} (${g.emps.length} موظف)</option>`).join('')}</select>${db.regions.length?'':'<p class="mu">لا توجد مناطق بعد، أضفها من قسم «المناطق».</p>'}<button class="full" id="esnd">إرسال للمنطقة</button></div>
+  </div><div class="acts"><button class="g" id="eb">رجوع</button><button class="d" id="evio">⚠ هذي مخالفة</button></div>`;
+  $('#mn').innerHTML=`<div class="two"><div>${P('الإجراء',comp)}${thread(r)}</div><div>${infoP(r)}</div></div>`;
+  $('#eb').onclick=()=>{sec='data';render()};
+  $('#evio').onclick=()=>{
+    if(!confirm('تحويلها إلى مخالفة؟ ستنتقل إلى قسم «المخالفات».'))return;
+    const n=$('#en').value.trim();r.vio='v'+Date.now();r.n=n||r.n;
+    db.viols.push({id:r.vio,rep:repId,i:r.i,by:me.u,st:'emp',reg:'',comp:'',log:[{s:'تحرير مخالفة',n:r.n||'',by:me.u,p:'قسم الجودة',t:now()}]});
+    save();sec='viols';render();toast('تم تحويلها إلى مخالفة')};
+  $('#esv').onclick=()=>{
+    const se=$('#es');if(se&&!se.value)return toast('اختر السبب أولاً',1);
+    const n=$('#en').value.trim();if(!n)return toast('اكتب الإفادة أولاً',1);
+    r.x=r.x||{};db.fields.forEach(f=>{r.x[f.id]=$('#ex_'+f.id).value});
+    r.s=se?se.value:'مغلقة';r.n=n;r.t=now();r.d=new Date().toISOString().slice(0,10);r.by=me.u;
+    (r.log=r.log||[]).push({s:'إغلاق الحالة · '+r.s,n,by:me.u,t:now()});
+    save();sec='data';render();toast('تم إغلاق الحالة')};
+  $('#esnd').onclick=()=>{
+    const g=$('#eg').value;if(!g)return toast('اختر المنطقة أولاً',1);
+    const n=$('#en').value.trim();if(!n)return toast('اكتب الملاحظة أولاً',1);
+    r.reg=g;r.rd=false;r.rr='';r.n=n;
+    (r.log=r.log||[]).push({s:'توجيه إلى '+rgn(g),n,by:me.u,t:now()});
+    save();sec='data';render();toast('تم الإرسال إلى '+rgn(g))};
+}
+function review(r){
+  $('#mn').innerHTML=`<div class="two"><div>${P('إفادة الموظف',`<div class="ff"><div><label>الموظف</label><input readonly value="${esc(nm(r.a))}"></div><div><label>السبب</label><input readonly value="${esc(r.s)}"></div></div><label>الإفادة</label><textarea readonly rows="3">${esc(r.n)}</textarea>`)}${P('رد المراجع والتحويل',`<label>الرد على الموظف</label><textarea id="rpl" rows="4">${esc(r.rp)}</textarea><label>توجيه إلى منطقة</label><select id="rgs"><option value="">-- بدون توجيه --</option>${db.regions.map(g=>`<option value="${g.id}" ${g.id===r.reg?'selected':''}>${esc(g.name)} (${g.emps.length} موظف)</option>`).join('')}</select>${db.regions.length?'':'<p class="mu">لا توجد مناطق بعد، أضفها من قسم «المناطق».</p>'}${r.reg?`<p class="mu">رد المنطقة: ${esc(r.rr||'لم يتم بعد')}</p>`:''}<div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="g" id="eb">رجوع</button><button class="pk" id="rsv">حفظ</button></div>`)}${thread(r)}</div><div>${infoP(r)}</div></div>`;
+  $('#eb').onclick=()=>{sec='data';render()};
+  $('#rsv').onclick=()=>{const g=$('#rgs').value;if(g!==(r.reg||'')){r.rd=false;r.rr=''}
+    r.rp=$('#rpl').value;r.reg=g;r.rby=me.u;(r.log=r.log||[]).push({s:g?'رد وتوجيه إلى '+rgn(g):'رد المراجع',n:r.rp,by:me.u,t:now()});save();sec='data';render();toast('تم حفظ الرد')};
+}
+let rf='',rtab='open';
+function rcases(){
+  const gs=db.regions.filter(g=>isM()||can('review')||g.emps.includes(me.u)),ids=gs.map(g=>g.id);
+  const A=db.reports.flatMap(rep=>rep.rows.filter(r=>r.reg&&ids.includes(r.reg)&&(!rf||r.reg===rf)).map(r=>({rep,r})));
+  const O=A.filter(x=>!x.r.rd),D=A.filter(x=>x.r.rd),L=rtab==='open'?O:D;
+  $('#mn').innerHTML=P('حالات المناطق',`<div class="tool"><select id="rfs" style="width:auto"><option value="">كل المناطق</option>${gs.map(g=>`<option value="${g.id}" ${rf===g.id?'selected':''}>${esc(g.name)}</option>`).join('')}</select><button class="${rtab==='open'?'':'g'}" data-rt="open">بانتظار الإفادة (${O.length})</button><button class="${rtab==='done'?'':'g'}" data-rt="done">سبق إرسالها (${D.length})</button></div><div class="cards">`+(L.map((x,k)=>`<div class="cd ${x.r.rd?'cl':''}"><div class="ch"><b>${esc(x.rep.name)} · #${x.r.i+1}</b><span class="tag ${x.r.rd?'ok':''}">${x.r.fin?'أُغلقت نهائياً':x.r.rd?'أُرسلت للموظف':'بانتظار الإفادة'}</span></div><div class="cb"><div><span>المنطقة</span><b>${esc(rgn(x.r.reg))}</b></div>${x.rep.headers.slice(0,3).map((h,j)=>`<div><span>${esc(h)}</span><b>${esc(x.r.c[j])}</b></div>`).join('')}${x.r.n?`<div><span>ملاحظة الموظف</span><b>${esc(x.r.n)}</b></div>`:''}${x.r.rr?`<div><span>إفادة المنطقة</span><b>${esc(x.r.rr)}</b></div>`:''}</div>${x.r.rd||x.r.fin?'':`<button data-o="${k}">فتح</button>`}</div>`).join('')||`<p class="mu">${rtab==='open'?'لا توجد حالات بانتظار الإفادة':'لا توجد حالات سبق إرسالها'}</p>`)+`</div>`);
+  $('#rfs').onchange=e=>{rf=e.target.value;rcases()};
+  document.querySelectorAll('[data-rt]').forEach(b=>b.onclick=()=>{rtab=b.dataset.rt;rcases()});
+  document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.o];repId=x.rep.id;cur=x.r.i;sec='redit';render()});
+}
+
+function redit(){
+  const r=db.rows[cur],g=r&&db.regions.find(x=>x.id===r.reg);
+  if(!r||r.fin||r.rd||!g||!(isM()||can('review')||g.emps.includes(me.u))){sec='rcases';return rcases()}
+  $('#mn').innerHTML=`<div class="two"><div>${P('معالجة المنطقة: '+esc(g.name),`<div class="alert"><b>ملاحظة الموظف · ${esc(nm(r.a))}</b><p>${esc(r.n)}</p></div>${r.rp?`<div class="alert"><b>رد المراجع</b><p>${esc(r.rp)}</p></div>`:''}<label>الإفادة / الإجراء المتخذ</label><textarea id="rr" rows="5" placeholder="اكتب الإفادة ثم أرسلها للموظف">${esc(r.rr)}</textarea><div class="acts"><button class="g" id="eb">رجوع</button><button class="pk" id="rsv">إرسال للموظف</button></div>`)}${thread(r)}</div><div>${infoP(r)}</div></div>`;
+  $('#eb').onclick=()=>{sec='rcases';render()};
+  $('#rsv').onclick=()=>{const v=$('#rr').value.trim();if(!v)return toast('اكتب الإفادة أولاً',1);r.rr=v;r.rd=true;r.rt=now();(r.log=r.log||[]).push({s:'إفادة المنطقة · أُرسلت للموظف',n:v,by:me.u,t:now()});save();sec='rcases';render();toast('تم الإرسال للموظف')};
+}
+const QD='قسم الجودة',SUP='مشرف الجودة';
+function vdash(){
+  const A=myViols(),T=A.filter(vTurn),C=A.filter(v=>v.st==='closed');
+  const by={};A.forEach(v=>by[VST[v.st]]=(by[VST[v.st]]||0)+1);
+  const hr=new Date().getHours();
+  $('#mn').innerHTML=`<div class="hero"><div><small>${hr<12?'صباح الخير':'مساء الخير'}</small><h1>${esc(me.name)}</h1><p>${T.length?`لديك ${T.length} مخالفة بانتظار إجرائك`:'لا توجد مخالفات بانتظار إجرائك'}</p></div></div>`
+  +`<div class="grid st-g" style="margin-bottom:18px">`+[['بانتظار إجرائي',T.length],['إجمالي مخالفاتي',A.length],['مغلقة',C.length]].map(x=>`<div class="st pn" style="padding:14px"><span class="mu">${x[0]}</span><b data-cu="${x[1]}">${x[1]}</b></div>`).join('')+`</div>`
+  +P('حسب المرحلة',hbars(Object.entries(by)));
+  cu();
+}
+const VST={emp:'لدى قسم الجودة',reg:'عند المنطقة',comp:'عند شركة الفني',sup:'بانتظار اعتماد المشرف',closed:'مغلقة نهائياً'};
+const cmp=id=>(db.companies.find(c=>c.id===id)||{name:''}).name;
+const party=v=>v.st==='emp'?QD:v.st==='reg'?(rgn(v.reg)||'المنطقة'):v.st==='comp'?(cmp(v.comp)||'شركة الفني'):SUP;
+const vrow=v=>{const rp=db.reports.find(x=>x.id===v.rep);if(!rp)return null;const r=rp.rows.find(x=>x.i===v.i);return r?{rp,r}:null};
+const isSup=v=>{const q=vrow(v);return isM()||(q&&(q.rp.by?q.rp.by===me.u:false))};
+const myRegs=()=>db.regions.filter(g=>g.emps.includes(me.u)).map(g=>g.id);
+const myCmps=()=>db.companies.filter(c=>c.emps.includes(me.u)).map(c=>c.id);
+const inReg=v=>!!v.reg&&myRegs().includes(v.reg);
+const inCmp=v=>!!v.comp&&myCmps().includes(v.comp);
+const vTurn=v=>v.st==='emp'?(v.by===me.u||isM()):v.st==='reg'?(inReg(v)||isM()):v.st==='comp'?(inCmp(v)||isM()):isSup(v)&&v.st!=='closed';
+const vSee=v=>v.by===me.u||isSup(v)||inReg(v)||inCmp(v);
+let vreg='';
+const myViols=()=>db.viols.filter(v=>!!vrow(v)).filter(vSee).filter(v=>!vreg||v.reg===vreg);
+let vcur=null,vtab='open';
+function viols(){
+  const A=myViols(),T=A.filter(vTurn),O=A.filter(v=>v.st!=='closed'),C=A.filter(v=>v.st==='closed');
+  const L=vtab==='turn'?T:vtab==='open'?O:C;
+  const card=v=>{const q=vrow(v);if(!q)return '';
+    return `<div class="cd ${v.st==='closed'?'cl':''}"><div class="ch"><b>${esc(q.rp.name)} · #${v.i+1}</b><span class="tag ${v.st==='closed'?'ok':''}">${VST[v.st]}</span></div><div class="cb"><div><span>الجهة المحررة</span><b>قسم الجودة</b></div>${v.reg?`<div><span>المنطقة</span><b>${esc(rgn(v.reg))}</b></div>`:''}${v.comp?`<div><span>شركة الفني</span><b>${esc(cmp(v.comp))}</b></div>`:''}${q.rp.headers.slice(0,3).map((h,j)=>`<div><span>${esc(h)}</span><b>${esc(q.r.c[j])}</b></div>`).join('')}${(v.log||[]).length?`<div><span>آخر رد</span><b>${esc(v.log[v.log.length-1].n||'—')}</b></div>`:''}</div><button data-v="${v.id}">${vTurn(v)?'معالجة':'عرض'}</button></div>`};
+  const gl=isM()||db.viols.some(v=>isSup(v))?db.regions:db.regions.filter(g=>myRegs().includes(g.id));
+  $('#mn').innerHTML=P('المخالفات',`<div class="tool">${gl.length>1?`<select id="vrf" style="width:auto"><option value="">كل المناطق</option>${gl.map(g=>`<option value="${g.id}" ${vreg===g.id?'selected':''}>${esc(g.name)}</option>`).join('')}</select>`:''}<button class="${vtab==='turn'?'':'g'}" data-vt="turn">بانتظار إجرائي (${T.length})</button><button class="${vtab==='open'?'':'g'}" data-vt="open">الجارية (${O.length})</button><button class="${vtab==='closed'?'':'g'}" data-vt="closed">المغلقة (${C.length})</button></div><div class="cards">`+(L.map(card).join('')||'<p class="mu">لا توجد مخالفات هنا</p>')+`</div>`);
+  const vrf=$('#vrf');if(vrf)vrf.onchange=e=>{vreg=e.target.value;viols()};
+  document.querySelectorAll('[data-vt]').forEach(b=>b.onclick=()=>{vtab=b.dataset.vt;viols()});
+  document.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{vcur=b.dataset.v;sec='vedit';render()});
+}
+function vedit(){
+  const v=db.viols.find(x=>x.id===vcur),q=v&&vrow(v);
+  if(!v||!q||!vSee(v)){sec='viols';return viols()}
+  const turn=vTurn(v),r=q.r;
+  const go=(st,label,extra)=>{const n=$('#vn').value.trim();if(!n)return toast('اكتب الإفادة أولاً',1);
+    const p=v.st==='closed'?SUP:party(v);
+    Object.assign(v,extra||{});v.st=st;(v.log=v.log||[]).push({s:label,n,by:me.u,p,t:now()});save();sec='viols';render();toast(label)};
+  let acts='';
+  if(turn){
+    if(v.st==='emp')acts=`<div class="ob"><div class="obh">📍 توجيه إلى منطقة</div><select id="vg"><option value="">-- اختر المنطقة --</option>${db.regions.map(g=>`<option value="${g.id}" ${g.id===v.reg?'selected':''}>${esc(g.name)}</option>`).join('')}</select><button class="full" id="a1">إرسال للمنطقة</button></div><div class="ob"><div class="obh">🏁 إنهاء المخالفة</div><button class="full" id="a2">إرسال للمشرف للاطلاع</button><button class="pk full" id="a3">إغلاق المخالفة</button></div>`;
+    else if(v.st==='reg')acts=`<div class="ob"><div class="obh">🔧 توجيه إلى شركة الفني</div><select id="vc"><option value="">-- اختر الشركة --</option>${db.companies.map(c=>`<option value="${c.id}" ${c.id===v.comp?'selected':''}>${esc(c.name)}</option>`).join('')}</select><button class="full" id="a4">إرسال للشركة</button></div><div class="ob"><div class="obh">↩ إرجاع</div><button class="pk full" id="a5">إرجاع لمحرر المخالفة</button></div>`;
+    else if(v.st==='comp')acts=`<div class="ob"><div class="obh">↩ إرجاع للمنطقة</div><button class="pk full" id="a6">إرسال للمنطقة</button></div>`;
+    else if(v.st==='sup')acts=`<div class="ob"><div class="obh">✅ الاعتماد</div><button class="pk full" id="a7">اعتماد وإغلاق</button></div><div class="ob"><div class="obh">↩ إعادة توجيه</div><button class="full" id="a8">إرجاع للموظف</button><button class="full" id="a9">إرجاع للمنطقة</button></div>`;
+  } else if(v.st==='closed'&&isSup(v))acts=`<div class="ob"><div class="obh">🔓 إعادة فتح</div><button class="full" id="b1">فتح وتوجيه للموظف</button><button class="full" id="b2">فتح وتوجيه للمنطقة</button></div>`;
+  const comp=`<div class="alert"><b>المرحلة: ${VST[v.st]}</b><p>الجهة المحررة: قسم الجودة${v.reg?' · المنطقة: '+esc(rgn(v.reg)):''}${v.comp?' · الشركة: '+esc(cmp(v.comp)):''}</p></div>`
+    +(turn||(v.st==='closed'&&isSup(v))?`<label>اكتب الإفادة أو الإجراء</label><textarea id="vn" rows="4" placeholder="اكتب هنا ثم اختر الإجراء"></textarea><div class="opt2">${acts}</div>`:'<p class="mu">المخالفة الآن عند طرف آخر، يمكنك الاطلاع فقط.</p>')
+    +`<div class="acts"><button class="g" id="vb">رجوع</button></div>`;
+  const thr=P('المحادثة والردود',(v.log||[]).length?`<div class="thr">`+v.log.map(l=>`<div class="msg ${l.p===SUP?'sup':(l.p&&l.p!==QD)?'reg':'emp'}"><span class="ava">${esc([...((l.p||QD).trim())][0]||'?')}</span><div class="bub"><div class="mh"><b>${esc(l.p||QD)}</b><span>${esc(l.t)}</span></div><span class="mtag">${esc(l.s)}</span>${l.n?`<p>${esc(l.n)}</p>`:''}</div></div>`).join('')+`</div>`:'<span class="mu">لا توجد ردود</span>');
+  $('#mn').innerHTML=`<div class="two"><div>${P('المخالفة',comp)}${thr}</div><div>${P('معلومات الأمر',`<div class="ff"><div><label>التقرير</label><input readonly value="${esc(q.rp.name)}"></div><div><label>الرقم التسلسلي</label><input readonly value="${v.i+1}"></div>${q.rp.headers.map((x,j)=>`<div><label>${esc(x)}</label><input readonly value="${esc(r.c[j])}"></div>`).join('')}</div>`)}</div></div>`;
+  $('#vb').onclick=()=>{sec='viols';render()};
+  const on=(id,fn)=>{const e=$('#'+id);if(e)e.onclick=fn};
+  on('a1',()=>{const g=$('#vg').value;if(!g)return toast('اختر المنطقة أولاً',1);go('reg','توجيه إلى منطقة '+rgn(g),{reg:g,comp:''})});
+  on('a2',()=>go('sup','إرسال للمشرف للاطلاع'));
+  on('a3',()=>go('closed','إغلاق المخالفة'));
+  on('a4',()=>{const c=$('#vc').value;if(!c)return toast('اختر الشركة أولاً',1);go('comp','توجيه إلى شركة '+cmp(c),{comp:c})});
+  on('a5',()=>go('emp','إرجاع من المنطقة لمحرر المخالفة'));
+  on('a6',()=>go('reg','إفادة شركة الفني · إرسال للمنطقة'));
+  on('a7',()=>go('closed','اعتماد المشرف وإغلاق المخالفة'));
+  on('a8',()=>go('emp','إرجاع من المشرف للموظف'));
+  on('a9',()=>go('reg','إرجاع من المشرف للمنطقة'));
+  on('b1',()=>go('emp','إعادة فتح المخالفة وتوجيهها للموظف'));
+  on('b2',()=>go('reg','إعادة فتح المخالفة وتوجيهها للمنطقة'));
+}
+function companies(){
+  const cs=c=>db.viols.filter(v=>v.comp===c.id);
+  $('#mn').innerHTML=P('إضافة شركة فني',`<div class="row"><input id="cn" placeholder="اسم الشركة"><button id="ca" style="flex:0">إضافة</button></div>`)+P('الشركات',`<p class="mu" style="margin-top:0">اضغط على أي شركة لإدارة فنييها.</p><div class="ucs">${db.companies.map((c,i)=>`<div class="uc" data-c="${i}"><div class="av">🔧</div><div><b>${esc(c.name)}</b><br><small class="mu">${c.emps.length} فني</small><br><span class="tag">${cs(c).length} مخالفة</span></div></div>`).join('')||'<span class="mu">لا توجد شركات بعد</span>'}</div>`);
+  $('#ca').onclick=()=>{const v=$('#cn').value.trim();if(!v)return;if(db.companies.some(c=>c.name===v))return alert('الشركة موجودة');db.companies.push({id:'c'+Date.now(),name:v,emps:[]});save();companies();toast('تمت إضافة الشركة')};
+  document.querySelectorAll('[data-c]').forEach(e=>e.onclick=()=>cPanel(+e.dataset.c));
+}
+function cPanel(i){
+  const c=db.companies[i],m=document.createElement('div');m.className='modal';document.body.appendChild(m);
+  m.onclick=e=>{if(e.target===m)shut(m)};
+  const draw=()=>{
+    m.innerHTML=`<div class="up"><div class="uh"><button class="x" id="cl">✕</button><div class="av big">🔧</div><h3 style="margin:0">${esc(c.name)}</h3><span style="opacity:.8">${c.emps.length} فني</span></div><div class="ub"><label>اسم الشركة</label><input id="cnm" value="${esc(c.name)}"><label>فنيو الشركة</label>${emps().map(e=>`<label class="pr"><span class="av sm">${esc([...e.name.trim()][0]||'?')}</span><span class="pt"><b>${esc(e.name)}</b><small>@${esc(e.u)}</small></span><input type="checkbox" class="tg" value="${e.u}" ${c.emps.includes(e.u)?'checked':''}></label>`).join('')||'<p class="mu">أنشئ موظفين أولاً</p>'}<button class="d" id="dc" style="margin-top:16px;width:100%">حذف الشركة</button></div></div>`;
+    m.querySelector('#cl').onclick=()=>shut(m);
+    m.querySelector('#cnm').onchange=e=>{const v=e.target.value.trim();if(!v){e.target.value=c.name;return}c.name=v;save();draw();companies();toast('تم حفظ اسم الشركة')};
+    m.querySelectorAll('.tg').forEach(x=>x.onchange=()=>{c.emps=[...m.querySelectorAll('.tg:checked')].map(y=>y.value);save();companies();toast('تم حفظ الفنيين')});
+    m.querySelector('#dc').onclick=()=>{if(!confirm('حذف الشركة؟'))return;db.viols.forEach(v=>{if(v.comp===c.id)v.comp=''});db.companies.splice(i,1);save();shut(m,companies)};
+  };draw();
+}
+function companiesEnd(){}
+function regions(){
+  const cs=g=>allRows().filter(r=>r.reg===g.id);
+  $('#mn').innerHTML=P('إضافة منطقة',`<div class="row"><input id="gn" placeholder="اسم المنطقة"><button id="ga" style="flex:0">إضافة</button></div>`)+P('المناطق',`<p class="mu" style="margin-top:0">اضغط على أي منطقة لإدارة موظفيها.</p><div class="ucs">${db.regions.map((g,i)=>{const L=cs(g);return `<div class="uc" data-g="${i}"><div class="av">📍</div><div><b>${esc(g.name)}</b><br><small class="mu">${g.emps.length} موظف</small><br><span class="tag ${L.some(r=>!r.rd)?'':'ok'}">${L.length} حالة</span></div></div>`}).join('')||'<span class="mu">لا توجد مناطق بعد</span>'}</div>`);
+  $('#ga').onclick=()=>{const v=$('#gn').value.trim();if(!v)return;if(db.regions.some(g=>g.name===v))return alert('المنطقة موجودة');db.regions.push({id:'g'+Date.now(),name:v,emps:[]});save();regions();toast('تمت إضافة المنطقة')};
+  document.querySelectorAll('[data-g]').forEach(c=>c.onclick=()=>regionPanel(+c.dataset.g));
+}
+function regionPanel(i){
+  const g=db.regions[i],m=document.createElement('div');m.className='modal';document.body.appendChild(m);
+  m.onclick=e=>{if(e.target===m)shut(m)};
+  const draw=()=>{
+    const L=allRows().filter(r=>r.reg===g.id),dn=L.filter(r=>r.rd).length;
+    m.innerHTML=`<div class="up"><div class="uh"><button class="x" id="cl">✕</button><div class="av big">📍</div><h3 style="margin:0">${esc(g.name)}</h3><span style="opacity:.8">${g.emps.length} موظف</span></div><div class="ub">
+    <div class="grid" style="margin-top:14px;grid-template-columns:repeat(3,1fr)"><div class="st" style="text-align:center"><b>${L.length}</b><span class="mu">موجهة</span></div><div class="st" style="text-align:center"><b style="color:#ec205a">${L.length-dn}</b><span class="mu">قيد المعالجة</span></div><div class="st" style="text-align:center"><b>${dn}</b><span class="mu">تمت</span></div></div>
+    <label>اسم المنطقة</label><input id="gnm" value="${esc(g.name)}">
+    <label>موظفو المنطقة</label>${emps().map(e=>`<label class="pr"><span class="av sm">${esc([...e.name.trim()][0]||'?')}</span><span class="pt"><b>${esc(e.name)}</b><small>@${esc(e.u)}</small></span><input type="checkbox" class="tg" value="${e.u}" ${g.emps.includes(e.u)?'checked':''}></label>`).join('')||'<p class="mu">أنشئ موظفين أولاً من قسم المستخدمين</p>'}
+    <button class="d" id="dg" style="margin-top:18px;width:100%">حذف المنطقة</button></div></div>`;
+    m.querySelector('#cl').onclick=()=>shut(m);
+    m.querySelector('#gnm').onchange=e=>{const v=e.target.value.trim();if(!v||db.regions.some(x=>x!==g&&x.name===v)){e.target.value=g.name;return}g.name=v;save();draw();regions();toast('تم حفظ اسم المنطقة')};
+    m.querySelectorAll('.tg').forEach(c=>c.onchange=()=>{g.emps=[...m.querySelectorAll('.tg:checked')].map(x=>x.value);save();toast('تم حفظ موظفي المنطقة');m.querySelector('.uh span').textContent=g.emps.length+' موظف';regions()});
+    m.querySelector('#dg').onclick=()=>{if(!confirm('حذف المنطقة؟ الحالات الموجهة لها ستعود بدون منطقة.'))return;allRows().forEach(r=>{if(r.reg===g.id)r.reg=''});db.regions.splice(i,1);save();shut(m,regions)};
+  };
+  draw();
+}
+const own=rp=>rp.by?rp.by===me.u:isM();
+const ready=r=>r.s&&!r.fin&&(!r.reg||r.rd);
+const stg=r=>r.fin?'أُغلقت نهائياً':(r.reg&&!r.rd)?'عند المنطقة · '+rgn(r.reg):(r.reg&&r.rd&&!r.s)?'عادت من المنطقة':!r.s?'مع الموظف':'بانتظار إغلاق مشرف الجودة';
+let ff='ready';
+function final(){
+  const A=db.reports.filter(own).flatMap(rep=>rep.rows.map(r=>({rep,r}))),
+    R=A.filter(x=>ready(x.r)),W=A.filter(x=>x.r.s&&!x.r.fin&&!ready(x.r)),D=A.filter(x=>x.r.fin),L=ff==='ready'?R:D;
+  const O=db.reports.filter(own);
+  $('#mn').innerHTML=P('تقاريري',O.map((rp,k)=>{const t=rp.rows.length,d=rp.rows.filter(x=>x.fin).length,full=t>0&&d===t;return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span><b>${esc(rp.name)}</b> <span class="tag ${full?'ok':''}">${full?'مكتمل':d+' / '+t+' أُغلقت نهائياً'}</span></span><button ${full?'':'class="g"'} data-fx="${k}">تحميل التقرير الكامل (Excel)</button></div><div class="bar" style="margin-top:8px"><i style="width:${t?d/t*100:0}%"></i></div></div>`}).join('')||'<p class="mu">لا توجد تقارير</p>')+P('اعتماد إغلاق الحالات',`<p class="mu" style="margin-top:0">تظهر هنا حالات تقاريرك بعد اكتمال الردود، لتتأكد من الإفادة الكاملة وتغلقها نهائياً.</p><div class="grid" style="grid-template-columns:repeat(3,1fr)"><div class="st" style="text-align:center"><b style="color:#ec205a">${R.length}</b><span class="mu">جاهزة للإغلاق</span></div><div class="st" style="text-align:center"><b>${W.length}</b><span class="mu">بانتظار الردود</span></div><div class="st" style="text-align:center"><b>${D.length}</b><span class="mu">أُغلقت نهائياً</span></div></div><div style="display:flex;gap:8px;margin:14px 0"><button class="${ff==='ready'?'':'g'}" data-ff="ready">جاهزة للإغلاق</button><button class="${ff==='done'?'':'g'}" data-ff="done">المغلقة نهائياً</button></div><div class="cards">`+(L.map((x,k)=>`<div class="cd ${x.r.fin?'cl':''}"><div class="ch"><b>${esc(x.rep.name)} · #${x.r.i+1}</b><span class="tag ${x.r.fin?'ok':''}">${stg(x.r)}</span></div><div class="cb">${x.rep.headers.slice(0,3).map((h,j)=>`<div><span>${esc(h)}</span><b>${esc(x.r.c[j])}</b></div>`).join('')}<div><span>الموظف</span><b>${esc(nm(x.r.a))}</b></div>${x.r.reg?`<div><span>المنطقة</span><b>${esc(rgn(x.r.reg))}</b></div>`:''}${x.r.fn?`<div><span>ملاحظة الإغلاق</span><b>${esc(x.r.fn)}</b></div>`:''}</div><button data-o="${k}">${x.r.fin?'عرض':'مراجعة وإغلاق'}</button></div>`).join('')||'<p class="mu">لا توجد مخالفات هنا</p>')+`</div>`);
+  document.querySelectorAll('[data-fx]').forEach(b=>b.onclick=()=>fullExport(O[+b.dataset.fx]));
+  document.querySelectorAll('[data-ff]').forEach(b=>b.onclick=()=>{ff=b.dataset.ff;final()});
+  document.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const x=L[+b.dataset.o];repId=x.rep.id;cur=x.r.i;sec='fedit';render()});
+}
+function fedit(){
+  const rp=curRep(),r=db.rows[cur];
+  if(!rp||!r||!own(rp)||!(r.fin||ready(r))){sec='final';return final()}
+  const full=P('الإفادة الكاملة',`<div class="ff"><div><label>الموظف</label><input readonly value="${esc(nm(r.a))}"></div><div><label>السبب</label><input readonly value="${esc(r.s)}"></div></div>${db.fields.map(f=>(r.x||{})[f.id]?`<label>${esc(f.name)}</label><input readonly value="${esc(r.x[f.id])}">`:'').join('')}<label>إفادة الموظف</label><textarea readonly rows="3">${esc(r.n)}</textarea><label>رد المراجع</label><textarea readonly rows="3">${esc(r.rp)}</textarea>${r.reg?`<label>رد المنطقة (${esc(rgn(r.reg))})</label><textarea readonly rows="3">${esc(r.rr)}</textarea>`:''}`);
+  const act=r.fin?P('الإغلاق النهائي',`<p class="mu">أُغلقت بواسطة ${esc(nm(r.fby))} · ${esc(r.ft)}</p><textarea readonly rows="2">${esc(r.fn)}</textarea><button class="g" id="eb" style="margin-top:12px">رجوع</button>`):P('إغلاق المخالفة',`<label class="chk"><input type="checkbox" id="ok">تأكدت من اكتمال الإفادة وردود المراجع والمنطقة</label><label>ملاحظة الإغلاق</label><textarea id="fnt" rows="3"></textarea><div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="g" id="eb">رجوع</button><button class="pk" id="fs" disabled>إغلاق المخالفة نهائياً</button></div>`);
+  $('#mn').innerHTML=`<div class="two"><div>${full}${act}${thread(r)}</div><div>${infoP(r)}</div></div>`;
+  $('#eb').onclick=()=>{sec='final';render()};
+  if(!r.fin){
+    $('#ok').onchange=e=>{$('#fs').disabled=!e.target.checked};
+    $('#fs').onclick=()=>{r.fin=true;r.ft=now();r.fby=me.u;r.fn=$('#fnt').value;(r.log=r.log||[]).push({s:'إغلاق نهائي من مشرف الجودة',n:r.fn,by:me.u,t:now()});save();sec='final';render();toast('تم إغلاق المخالفة');
+      if(rp.rows.every(x=>x.fin)&&confirm('اكتمل إغلاق كل مخالفات التقرير. تحميل الملف الكامل بكل الأعمدة والإفادات؟'))fullExport(rp)};
+  }
+}
+async function fullExport(rp){
+  const H=[...rp.headers,'الموظف',...rp.fields.map(f=>f.name),'السبب','إفادة الموظف','وقت الإفادة','رد المراجع','المنطقة','رد المنطقة','معالجة المنطقة','المرحلة','أغلقها نهائياً','ملاحظة الإغلاق النهائي','وقت الإغلاق النهائي'];
+  const A=[H,...rp.rows.map(r=>[...rp.headers.map((_,j)=>r.c[j]??''),nm(r.a),...rp.fields.map(f=>(r.x||{})[f.id]||''),r.s,r.n,r.t||'',r.rp||'',rgn(r.reg),r.rr||'',r.reg?(r.rd?'تمت':'قيد المعالجة'):'',stg(r),r.fin?nm(r.fby):'',r.fn||'',r.ft||''])];
+  const G=[['رقم الحالة','الموظف','الإجراء','بواسطة','الوقت','التفاصيل'],...rp.rows.flatMap(r=>(r.log||[]).map(l=>[r.i+1,nm(r.a),l.s,nm(l.by),l.t,l.n]))];
+  const sheets=[{name:'التقرير الكامل',title:rp.name,aoa:A},{name:'سجل النشاط',title:'سجل النشاط · '+rp.name,aoa:G}];
+  const vs=db.viols.filter(v=>v.rep===rp.id);
+  if(vs.length){const V=[['#','الجهة المحررة','المرحلة','المنطقة','شركة الفني','آخر إفادة','عدد الردود'],...vs.map(v=>[v.i+1,'قسم الجودة',VST[v.st],rgn(v.reg),cmp(v.comp),(v.log&&v.log.length?v.log[v.log.length-1].n:''),(v.log||[]).length])];
+   const VL=[['#','الإجراء','الجهة','الوقت','الإفادة'],...vs.flatMap(v=>(v.log||[]).map(l=>[v.i+1,l.s,l.p||'قسم الجودة',l.t,l.n]))];
+   sheets.push({name:'المخالفات',title:'المخالفات · '+rp.name,aoa:V},{name:'سجل المخالفات',title:'سجل المخالفات',aoa:VL});}
+  await xl(sheets,rp.name+' - كامل.xlsx');
+}
+let curF='s';
+function options(){
+  if(!curRep()){$('#mn').innerHTML=P('الخيارات','<p class="mu">ارفع تقريراً أولاً ثم حدد خياراته من هنا.</p>');return}
+  let F=curF==='s'?null:db.fields.find(x=>x.id===curF);if(curF!=='s'&&!F)curF='s';
+  const L=F?F.opts:db.opts;
+  const txt=!!(F&&F.t==='text');
+  const sOff=!!curRep().sOff;if(sOff&&curF==='s'&&db.fields.length)curF=db.fields[0].id;
+  const cnt=o=>db.rows.filter(r=>F?(r.x||{})[F.id]===o:r.s===o).length;
+  const pill=(id,n)=>`<button data-f="${id}" class="${curF===id?'':'g'}">${esc(n)}</button>`;
+  $('#mn').innerHTML=repPills()
+  +P('خانات «'+esc(curRep().name)+'»',`<p class="mu" style="margin-top:0">كل خانة تظهر للموظف كقائمة اختيار في صفحة الحالة، مثل «السبب».</p><div style="display:flex;gap:8px;flex-wrap:wrap">${sOff?'':pill('s','السبب')}${db.fields.map(f=>pill(f.id,f.name)).join('')}<button class="g" id="nf">＋ خانة جديدة</button>${sOff?'<button class="g" id="rs">↩ إعادة خانة السبب</button>':''}</div>`+(!F?(sOff?'<p class="mu" style="margin:10px 0 0">خانة السبب محذوفة، وتُغلق الحالة بالإفادة فقط.</p>':`<div class="row" style="margin-top:14px"><div><label>الخانة الحالية</label><input readonly value="السبب"></div><button class="d" id="ds" style="flex:0">حذف خانة السبب</button></div>`):`<div class="row" style="margin-top:14px"><div><label>اسم الخانة</label><input id="fn" value="${esc(F.name)}"></div><button class="d" id="df" style="flex:0">حذف الخانة</button></div><label>نوع الخانة</label><div class="seg" id="ftype"><button data-t="list" class="${F.t!=='text'?'on':''}">قائمة منسدلة</button><button data-t="text" class="${F.t==='text'?'on':''}">ملاحظات (كتابة حرة)</button></div>`))
+  +((txt||(!F&&sOff))?(txt?P('ملاحظات','<p class="mu" style="margin:0">هذه الخانة كتابة حرة، يكتب فيها الموظف ما يشاء ولا تحتاج خيارات.</p>'):P('السبب','<p class="mu" style="margin:0">خانة السبب محذوفة من هذا التقرير. أعدها من الأعلى إن أردت استخدامها.</p>')):P('إضافة خيار إلى «'+esc(F?F.name:'السبب')+'»',`<div class="row"><input id="no" placeholder="اسم الخيار الجديد"><button id="ao" style="flex:0">إضافة</button></div>`)
+  +P('قائمة الخيارات',`<div class="tool"><span class="mu">${L.length} خيار</span><span class="sp"></span>${L.length?'<button class="d" id="dall">حذف كل الخيارات</button>':''}</div>`+(L.map((o,i)=>`<div class="orow" data-i="${i}"><span class="num">${i+1}</span><input class="oi" value="${esc(o)}"><span class="mu cnt">${cnt(o)} حالة</span><button class="g mini" data-m="-1" ${i?'':'disabled'} title="أعلى">▲</button><button class="g mini" data-m="1" ${i<L.length-1?'':'disabled'} title="أسفل">▼</button><button class="d mini" data-d="1" title="حذف">✕</button></div>`).join('')||'<p class="mu">لا توجد خيارات بعد</p>')));
+  wirePills();
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{curF=b.dataset.f;options()});
+  $('#nf').onclick=()=>ask('خانة جديدة','<label>اسم الخانة (مثال: التصنيف، الأولوية)</label><input id="fnm">','إضافة',m=>{
+    const v=m.querySelector('#fnm').value.trim();if(!v)return false;if(db.fields.some(f=>f.name===v)||v==='السبب'){alert('الاسم موجود');return false}
+    const id='f'+Date.now();db.fields.push({id,name:v,opts:[],t:'list'});curF=id;save();options();toast('تمت إضافة الخانة')});
+  if(F){
+    $('#fn').onchange=e=>{const v=e.target.value.trim();if(!v){e.target.value=F.name;return}F.name=v;save();options();toast('تم حفظ اسم الخانة')};
+    $('#df').onclick=()=>{if(confirm('حذف الخانة بكل خياراتها؟'))(db.fields=db.fields.filter(x=>x.id!==F.id),curF='s',save(),options())};
+  }
+  const ds=$('#ds');if(ds)ds.onclick=()=>{if(!confirm('حذف خانة السبب؟ ستُغلق الحالات بالإفادة فقط.'))return;curRep().sOff=true;curF=db.fields[0]?db.fields[0].id:'s';save();options();toast('تم حذف خانة السبب')};
+  const rsb=$('#rs');if(rsb)rsb.onclick=()=>{curRep().sOff=false;curF='s';save();options();toast('تمت إعادة خانة السبب')};
+  if(txt||(!F&&sOff))return;
+  if(F)document.querySelectorAll('#ftype [data-t]').forEach(b=>b.onclick=()=>{F.t=b.dataset.t;save();options();toast('تم تغيير نوع الخانة')});
+  const da=$('#dall');if(da)da.onclick=()=>{if(confirm('حذف كل خيارات هذه الخانة؟')){L.length=0;save();options();toast('تم حذف كل الخيارات')}};
+  $('#ao').onclick=()=>{const v=$('#no').value.trim();if(!v)return;if(L.includes(v))return alert('الخيار موجود');L.push(v);save();options();toast('تمت إضافة الخيار')};
+  document.querySelectorAll('.oi').forEach(inp=>inp.onchange=()=>{
+    const i=+inp.closest('[data-i]').dataset.i,old=L[i],v=inp.value.trim();
+    if(!v||(v!==old&&L.includes(v))){alert(v?'الخيار موجود':'الاسم مطلوب');inp.value=old;return}
+    db.rows.forEach(r=>{if(F){if((r.x||{})[F.id]===old)r.x[F.id]=v}else{if(r.s===old)r.s=v;(r.log||[]).forEach(l=>{if(l.s===old)l.s=v})}});L[i]=v;save();options();toast('تم حفظ الخيار');
+  });
+  document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{const i=+b.closest('[data-i]').dataset.i,j=i+ +b.dataset.m;[L[i],L[j]]=[L[j],L[i]];save();options()});
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const i=+b.closest('[data-i]').dataset.i,n=cnt(L[i]);
+    if(n&&!confirm(`الخيار مستخدم في ${n} حالة وستبقى بقيمتها الحالية. حذفه من القائمة؟`))return;L.splice(i,1);save();options();toast('تم حذف الخيار')});
+}
+function upload(){
+  const es=emps();
+  $('#mn').innerHTML=`<div class="pn"><div class="hd">رفع وتوزيع ملف Excel</div><div class="bd"><label>ملف Excel</label><input type="file" id="fi" accept=".xlsx,.xls,.csv"><label>اسم التقرير</label><input id="rn" placeholder="مثال: تقرير الجودة أكتوبر"><label>خيارات التقرير</label><select id="ro"><option value="">قائمة افتراضية</option>${db.reports.map(r=>`<option value="${r.id}">نسخ من: ${esc(r.name)}</option>`).join('')}</select>
+  <label>الموظفون المحددون للتوزيع</label><div>${es.map(e=>`<label class="chk"><input type="checkbox" class="ce" value="${e.u}" checked>${esc(e.name)}</label>`).join('')||'<span class="mu">أنشئ موظفين أولاً من قسم المستخدمين</span>'}</div>
+  <p class="mu">خيارات كل تقرير تُدار من قسم «الخيارات».</p>
+  <p id="pv" class="mu"></p><button id="sp">تقسيم وتوزيع بالتساوي</button> <span id="um" style="color:var(--ok)">${esc(msg)}</span></div></div>`;
+  let parsed=null;
+  $('#fi').onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});
+      const a=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:'',raw:false});
+      const rows=a.slice(1).filter(r=>r.some(v=>String(v).trim()!==''));
+      parsed={h:a[0].map(x=>String(x)),rows};if(!$('#rn').value)$('#rn').value=f.name.replace(/\.[^.]+$/,'');
+      $('#pv').textContent=`تمت قراءة ${rows.length} صف و ${parsed.h.length} عمود`;
+    }catch(err){$('#pv').textContent='تعذرت قراءة الملف'}
+  };
+  $('#sp').onclick=()=>{
+    const sel=[...document.querySelectorAll('.ce:checked')].map(x=>x.value);
+    if(!parsed||!parsed.rows.length)return alert('اختر ملفاً صالحاً أولاً');
+    if(!sel.length)return alert('حدد موظفاً واحداً على الأقل');
+    
+    
+    const n=parsed.rows.length,b=Math.floor(n/sel.length),rem=n%sel.length;let k=0;
+    const rp={id:'r'+Date.now(),name:$('#rn').value.trim()||'تقرير '+(db.reports.length+1),headers:parsed.h,rows:[],emps:sel,by:me.u,opts:[...DEF],fields:[],date:new Date().toLocaleDateString('ar')};
+    const src=db.reports.find(x=>x.id===$('#ro').value);if(src){rp.opts=[...src.opts];rp.fields=JSON.parse(JSON.stringify(src.fields))}
+    sel.forEach((u,j)=>{const cnt=b+(j<rem?1:0);for(let q=0;q<cnt;q++,k++)rp.rows.push({i:k,a:u,c:parsed.rows[k],s:'',n:'',t:'',by:''})});
+    db.reports.push(rp);repId=rp.id;save();toast('تم توزيع الملف');msg=`تم توزيع ${n} صف على ${sel.length} موظف`;upload();
+  };
+}
+const IC={upload:'📤',users:'👥',report:'📊',options:'⚙️',review:'🔍'};
+const DS={upload:'رفع ملفات Excel وتوزيعها على الموظفين',users:'إنشاء المستخدمين والمناطق وإدارة الصلاحيات',report:'سحب التقارير بصيغة Excel',options:'إدارة الأسباب والخانات لكل تقرير',review:'فتح الحالات المغلقة والرد وتوجيهها للمناطق'};
+function users(){users0();document.querySelectorAll('[data-u]').forEach(c=>c.onclick=()=>userPanel(+c.dataset.u))}
+function renameUser(o,n){
+  const sw=x=>x===o?n:x;
+  db.users.forEach(u=>{if(u.u===o)u.u=n});
+  db.reports.forEach(rp=>{if(rp.by===o)rp.by=n;rp.emps=rp.emps.map(sw);
+    rp.rows.forEach(r=>{r.a=sw(r.a);if(r.by===o)r.by=n;if(r.rby===o)r.rby=n;if(r.fby===o)r.fby=n;(r.log||[]).forEach(l=>{l.by=sw(l.by)})})});
+  db.regions.forEach(g=>g.emps=g.emps.map(sw));
+  db.companies.forEach(c=>c.emps=c.emps.map(sw));
+  db.viols.forEach(v=>{v.by=sw(v.by);(v.log||[]).forEach(l=>{l.by=sw(l.by)})});
+  if(me&&me.u===o)me=db.users.find(x=>x.u===n)||me;
+}
+function userPanel(i){
+  const u=db.users[i],self=u.u===me.u,m=document.createElement('div');m.className='modal';document.body.appendChild(m);
+  m.onclick=e=>{if(e.target===m)shut(m)};
+  const draw=()=>{
+    m.innerHTML=`<div class="up"><div class="uh"><button class="x" id="cl">✕</button><div class="av big">${esc([...u.name.trim()][0]||'?')}</div><h3 style="margin:0">${esc(u.name)}</h3><span style="opacity:.8">@${esc(u.u)}</span></div><div class="ub">
+    <label>الدور</label><div class="seg"><button data-r="employee" class="${u.role==='employee'?'on':''}" ${self?'disabled':''}>موظف</button><button data-r="manager" class="${u.role==='manager'?'on':''}" ${self?'disabled':''}>مدير</button></div>
+    <label>الأقسام والصلاحيات</label>${u.role==='manager'?'<div class="note">المدير يملك كل الأقسام والصلاحيات</div>':Object.keys(PERMS).map(p=>`<label class="pr"><span class="ic">${IC[p]||'•'}</span><span class="pt"><b>${PERMS[p]}</b><small>${DS[p]||''}</small></span><input type="checkbox" class="tg" data-p="${p}" ${u.perms.includes(p)?'checked':''}></label>`).join('')}
+    <label>المناطق</label><div>${db.regions.filter(g=>g.emps.includes(u.u)).map(g=>`<span class="tag ok">${esc(g.name)}</span>`).join(' ')||'<span class="mu">غير مضاف لأي منطقة</span>'}</div>
+    <label>الاسم الظاهر</label><input id="unm" value="${esc(u.name)}">
+    <label>اسم المستخدم (للدخول)</label><input id="uun" value="${esc(u.u)}">
+    <label>كلمة مرور جديدة</label><input id="npw" placeholder="اتركها فارغة بدون تغيير">
+    <button class="pk" id="spw" style="width:100%;margin-top:14px">حفظ التغييرات</button>
+    ${self?'':'<button class="d" id="du" style="margin-top:18px;width:100%">حذف المستخدم</button>'}</div></div>`;
+    m.querySelector('#cl').onclick=()=>shut(m);
+    m.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{u.role=b.dataset.r;save();draw();users0();wireU();toast('تم تغيير الدور')});
+    m.querySelectorAll('.tg').forEach(c=>c.onchange=()=>{u.perms=[...m.querySelectorAll('.tg:checked')].map(x=>x.dataset.p);save();users0();wireU();toast('تم حفظ الصلاحيات')});
+    m.querySelector('#spw').onclick=()=>{
+      const nn=m.querySelector('#unm').value.trim(),uu=m.querySelector('#uun').value.trim(),v=m.querySelector('#npw').value;
+      if(!nn||!uu)return toast('الاسم واسم المستخدم مطلوبان',1);
+      if(uu!==u.u&&db.users.some(x=>x.u===uu))return toast('اسم المستخدم مستخدم مسبقاً',1);
+      if(uu!==u.u)renameUser(u.u,uu);
+      u.name=nn;if(v)u.p=v;save();if(me&&me.u===u.u){sec='users';render()}else users();shut(m);toast(v?'تم الحفظ وتغيير كلمة المرور':'تم حفظ بيانات المستخدم')};
+    const d=m.querySelector('#du');if(d)d.onclick=()=>{if(!confirm('حذف المستخدم؟'))return;db.users.splice(i,1);db.regions.forEach(g=>g.emps=g.emps.filter(x=>x!==u.u));save();shut(m,users)};
+  };
+  const wireU=()=>document.querySelectorAll('[data-u]').forEach(c=>c.onclick=()=>{shut(m);userPanel(+c.dataset.u)});
+  draw();
+}
+function users0(){
+  const pc=(u,sel)=>Object.keys(PERMS).map(p=>`<label class="chk"><input type="checkbox" data-p="${p}" ${sel&&sel.includes(p)?'checked':''}>${PERMS[p]}</label>`).join('');
+  $('#mn').innerHTML=`<div class="pn"><div class="hd">إنشاء مستخدم</div><div class="bd"><div class="row"><div><label>الاسم</label><input id="nn"></div><div><label>اسم المستخدم</label><input id="nu"></div><div><label>كلمة المرور</label><input id="np"></div><div><label>الدور</label><select id="nr"><option value="employee">موظف</option><option value="manager">مدير</option></select></div></div>
+  <label>الصلاحيات الإضافية</label><div id="npc">${pc(0,[])}</div><button id="ad" style="margin-top:10px">إضافة</button></div></div>
+  <div class="pn"><div class="hd">المستخدمون والصلاحيات</div><div class="bd"><p class="mu" style="margin-top:0">اضغط على أي مستخدم لفتح لوحة صلاحياته.</p><div class="ucs">${db.users.map((u,i)=>`<div class="uc" data-u="${i}"><div class="av">${esc([...u.name.trim()][0]||'?')}</div><div><b>${esc(u.name)}</b><br><small class="mu">@${esc(u.u)}</small><br><span class="tag ${u.role==='manager'?'ok':''}">${u.role==='manager'?'مدير':'موظف'}</span>${u.role==='manager'?'':` <small class="mu">${u.perms.length} صلاحية</small>`}</div></div>`).join('')}</div></div></div>`;
+  $('#ad').onclick=()=>{
+    const u=$('#nu').value.trim(),p=$('#np').value,n=$('#nn').value.trim();
+    if(!u||!p||!n)return alert('أكمل جميع الحقول');
+    if(db.users.some(x=>x.u===u))return alert('اسم المستخدم موجود');
+    db.users.push({u,p,name:n,role:$('#nr').value,perms:[...document.querySelectorAll('#npc input:checked')].map(x=>x.dataset.p)});
+    save();users();toast('تمت إضافة المستخدم');
+  };
+  document.querySelectorAll('tr[data-i] [data-p]').forEach(c=>c.onchange=()=>{
+    const u=db.users[+c.closest('tr').dataset.i];
+    u.perms=[...c.closest('td').querySelectorAll('input:checked')].map(x=>x.dataset.p);save();
+  });
+  document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(confirm('حذف المستخدم؟')){db.users.splice(+b.dataset.x,1);save();users()}});
+}
+function dbsec(){
+  $('#mn').innerHTML=P('قاعدة البيانات',`<p class="mu" style="margin-top:0" id="syn">...</p>
+   <label>عنوان الخادم (API)</label><div class="row"><input id="sv1" value="${esc(SRV)}" placeholder="مثال: http://192.168.8.204:5033/api"><button id="sv2" style="flex:0">حفظ</button><button class="g" id="sv3" style="flex:0">مزامنة الآن</button></div>
+   <p class="mu">اتركه فارغاً للعمل محلياً على هذا الجهاز فقط.</p>`)
+  +P('نسخة احتياطية',`<div class="row"><button id="bk1">⬇ تحميل نسخة احتياطية (JSON)</button><button class="g" id="bk2">⬆ استعادة من ملف</button><input type="file" id="bk3" accept=".json" style="display:none"></div>
+   <p class="mu">النسخة تحتوي كل شيء: المستخدمون والتقارير والحالات والمخالفات والمناطق والشركات والخيارات.</p>`)
+  +P('النسخ المحفوظة على الخادم','<div id="bl" class="mu">...</div>');
+  dbStamp();
+  $('#sv2').onclick=()=>{SRV=$('#sv1').value.trim().replace(/\/$/,'');try{localStorage.setItem('wf_srv',SRV)}catch(e){}
+    (async()=>{if(SRV){await pull(true);if(online)await push()}dbsec();toast(SRV?(online?'تم الاتصال بالخادم':'تعذر الاتصال بالخادم'):'تم التحويل للحفظ المحلي',SRV&&!online?1:0)})()};
+  $('#sv3').onclick=async()=>{await pull(true);if(online)await push();dbsec();toast(online?'تمت المزامنة':'تعذر الاتصال',online?0:1)};
+  $('#bk1').onclick=async()=>{const js=JSON.stringify({app:'pioneers',at:new Date().toISOString(),data:db},null,1);if(NATIVE){try{await nativeSave('backup-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json',new TextEncoder().encode(js));toast('تم تجهيز النسخة')}catch(e){}return}const b=new Blob([js],{type:'application/json'});
+    const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='backup-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},2000);toast('تم تحميل النسخة')};
+  $('#bk2').onclick=()=>$('#bk3').click();
+  $('#bk3').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    try{const j=JSON.parse(await f.text()),d=j.data||j;
+      if(!d.users||!Array.isArray(d.users))return toast('الملف غير صالح',1);
+      if(!confirm('استعادة النسخة؟ ستُستبدل كل البيانات الحالية.'))return;
+      applyDB(d);localSave();if(SRV)await push();sec='dbsec';render();toast('تمت الاستعادة')}
+    catch(x){toast('تعذر قراءة الملف',1)}};
+  (async()=>{const e=$('#bl');if(!SRV)return e.textContent='لا يوجد خادم متصل.';
+    try{const r=await fetch(SRV+'/backups',{cache:'no-store'});const L=await r.json();
+      e.innerHTML=L.length?`<div class="tool"><span class="mu">${L.length} نسخة</span><span class="sp"></span><button class="g" id="bdk">حذف الكل عدا آخر 20</button><button class="d" id="bda">حذف الكل</button></div><div class="tw2"><table><thead><tr><th>النسخة</th><th>التاريخ</th><th>الحجم</th><th>استعادة</th><th>حذف</th></tr></thead><tbody>`+
+        L.map(b=>`<tr><td>${esc(b.name)}</td><td>${esc(b.at)}</td><td>${Math.round(b.size/1024)} KB</td><td><button class="g mini" data-rb="${esc(b.name)}">↩</button></td><td><button class="d mini" data-db="${esc(b.name)}">✕</button></td></tr>`).join('')+`</tbody></table></div>`:'لا توجد نسخ بعد.';
+      const wipe=async(payload,msg)=>{try{const q=await fetch(SRV+'/backups/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        if(q.status===404||q.status===501)return toast('ملف server.js على الخادم قديم — انسخ النسخة الجديدة وأعد تشغيله',1);
+        if(!q.ok)throw 0;const j=await q.json();dbsec();toast(msg+' ('+j.deleted+')')}catch(x){toast('تعذر الحذف',1)}};
+      const bdk=$('#bdk'),bda=$('#bda');
+      if(bdk)bdk.onclick=()=>{if(confirm('حذف كل النسخ عدا آخر 20؟'))wipe({all:true,keep:20},'تم حذف النسخ')};
+      if(bda)bda.onclick=()=>{if(confirm('حذف كل النسخ الاحتياطية على الخادم؟ لا يمكن التراجع.'))wipe({all:true,keep:0},'تم حذف كل النسخ')};
+      e.querySelectorAll('[data-db]').forEach(b=>b.onclick=()=>{if(confirm('حذف النسخة '+b.dataset.db+'؟'))wipe({name:b.dataset.db},'تم الحذف')});
+      e.querySelectorAll('[data-rb]').forEach(b=>b.onclick=async()=>{
+        if(!confirm('استعادة النسخة '+b.dataset.rb+'؟ ستُستبدل البيانات الحالية.'))return;
+        try{const q=await fetch(SRV+'/restore',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:b.dataset.rb})});
+          if(!q.ok)throw 0;await pull(true);sec='dbsec';render();toast('تمت الاستعادة من الخادم')}catch(x){toast('تعذرت الاستعادة',1)}});
+    }catch(x){e.textContent='تعذر قراءة النسخ من الخادم.'}})();
+}
+let pRep='';
+function prod(){
+  const reps=db.reports,pick=pRep?reps.filter(r=>r.id===pRep):reps;
+  const rows=pick.flatMap(r=>r.rows),vio=db.viols.filter(v=>!pRep||v.rep===pRep);
+  const tot=rows.length,cl=rows.filter(r=>!!r.s).length,atR=rows.filter(r=>!r.s&&r.reg&&!r.rd).length,fin=rows.filter(r=>r.fin).length;
+  const pc=tot?Math.round(cl/tot*100):0;
+  const us=[...new Set(rows.map(r=>r.a))].map(u=>{
+    const mine=rows.filter(r=>r.a===u),c=mine.filter(r=>r.s).length;
+    return {u,name:nm(u),t:mine.length,c,o:mine.filter(r=>!r.s&&!(r.reg&&!r.rd)).length,g:mine.filter(r=>!r.s&&r.reg&&!r.rd).length,
+      v:vio.filter(v=>v.by===u).length,f:mine.filter(r=>r.fin).length,p:mine.length?Math.round(c/mine.length*100):0,
+      last:mine.filter(r=>r.t).map(r=>r.t).sort().slice(-1)[0]||''};
+  }).sort((a,b)=>b.c-a.c);
+  const bar=p=>`<div class="bar" style="min-width:90px"><i style="width:${p}%"></i></div>`;
+  $('#mn').innerHTML=P('إنتاجية الموظفين',`<div class="tool"><button class="${pRep?'g':''}" data-pr="">كل التقارير</button>${reps.map(r=>`<button class="${pRep===r.id?'':'g'}" data-pr="${r.id}">${esc(r.name)}</button>`).join('')}<span class="sp"></span><button class="g" id="px">Export Excel</button></div>`)
+  +`<div class="grid st-g" style="margin-bottom:18px">`+[['إجمالي الحالات',tot],['المغلقة',cl],['المعلقة',tot-cl],['نسبة الإنجاز',pc+'%'],['المخالفات',vio.length]].map(x=>`<div class="st pn" style="padding:14px"><span class="mu">${x[0]}</span><b data-cu="${x[1]}">${x[1]}</b></div>`).join('')+`</div>`
+  +P('التفصيل حسب الموظف',`<div class="tw2"><table><thead><tr><th>#</th><th>الموظف</th><th>الإجمالي</th><th>مغلقة</th><th>معلقة</th><th>عند المناطق</th><th>مخالفات حررها</th><th>معتمدة نهائياً</th><th>نسبة الإنجاز</th><th>آخر إنجاز</th></tr></thead><tbody>`
+   +(us.map((x,k)=>`<tr><td>${k+1}</td><td><b>${esc(x.name)}</b></td><td>${x.t}</td><td><span class="tag ok">${x.c}</span></td><td>${x.o}</td><td>${x.g}</td><td>${x.v}</td><td>${x.f}</td><td style="min-width:150px">${bar(x.p)}<span class="mu">${x.p}%</span></td><td class="mu">${esc(x.last)}</td></tr>`).join('')||'<tr><td colspan="10" class="mu">لا توجد بيانات</td></tr>')
+   +`</tbody><tfoot><tr><th></th><th>المجموع</th><th>${tot}</th><th>${cl}</th><th>${tot-cl-atR}</th><th>${atR}</th><th>${vio.length}</th><th>${fin}</th><th>${pc}%</th><th></th></tr></tfoot></table></div>`)
+  +P('مقارنة الإنجاز',hbars(us.map(x=>[x.name+' ('+x.p+'%)',x.c])));
+  cu();
+  document.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{pRep=b.dataset.pr;prod()});
+  $('#px').onclick=()=>exp([['الموظف','الإجمالي','مغلقة','معلقة','عند المناطق','مخالفات حررها','معتمدة نهائياً','نسبة الإنجاز','آخر إنجاز'],
+    ...us.map(x=>[x.name,x.t,x.c,x.o,x.g,x.v,x.f,x.p+'%',x.last]),
+    ['المجموع',tot,cl,tot-cl-atR,atR,vio.length,fin,pc+'%','']],'productivity');
+}
+function report(){
+  const d=db.rows.filter(done).length;
+  $('#mn').innerHTML=repPills()+`<div class="pn"><div class="hd">التقرير</div><div class="bd"><div class="grid"><div class="st"><span class="mu">الإجمالي</span><b>${db.rows.length}</b></div><div class="st"><span class="mu">المعبأ</span><b>${d}</b></div><div class="st"><span class="mu">المتبقي</span><b>${db.rows.length-d}</b></div></div>
+  <label class="chk" style="margin-top:12px"><input type="checkbox" id="fo">المعبأ فقط</label><br><button id="dl">سحب التقرير (Excel)</button> <span id="rm" class="mu"></span></div></div>`;
+  wirePills();
+  $('#dl').onclick=async()=>{
+    const rs=db.rows.filter(r=>!$('#fo').checked||done(r));
+    if(!rs.length)return $('#rm').textContent='لا توجد بيانات';
+    const aoa=[[...db.headers,'الموظف',...db.fields.map(f=>f.name),'الحالة','ملاحظات','وقت المعالجة','رد المراجع','المنطقة','رد المنطقة','معالجة المنطقة','المرحلة','ملاحظة الإغلاق النهائي'],...rs.map(r=>[...db.headers.map((_,j)=>r.c[j]??''),nm(r.a),...db.fields.map(f=>(r.x||{})[f.id]||''),r.s,r.n,r.t,r.rp||'',rgn(r.reg),r.rr||'',r.reg?(r.rd?'تمت':'قيد المعالجة'):'',stg(r),r.fn||''])];
+    await xl([{name:'التقرير',title:(curRep()?curRep().name:'التقرير'),aoa}],(curRep()?curRep().name:'report')+'.xlsx');
+  };
+}
+render();dbStamp();
+if(SRV)pull(true);
+setInterval(()=>{if(SRV&&!document.hidden&&!pushT)pull()},15000);
+</script>
+</body>
+</html>
+
+</body></html>

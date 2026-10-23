@@ -1,0 +1,7 @@
+{
+  "appId": "com.pioneers.workflow",
+  "appName": "Pioneers",
+  "webDir": "www",
+  "server": { "androidScheme": "http", "cleartext": true },
+  "android": { "allowMixedContent": true }
+}
